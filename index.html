@@ -2,127 +2,105 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Select a Location</title>
+  <title>Cookies Locations</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      background: #f0f2f5;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
     }
 
-    .location-container {
-      width: 90%;
-      max-width: 600px;
+    .container {
+      text-align: center;
       background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      overflow-y: auto;
-      max-height: 90vh;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
     }
 
-    .location {
-      border-bottom: 1px solid #eee;
-      padding: 10px 0;
+    select {
+      width: 100%;
+      padding: 0.5rem;
+      margin: 1rem 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
     }
 
-    .location:last-child {
-      border-bottom: none;
+    .info {
+      text-align: left;
+      background-color: #f2f2f2;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
     }
 
-    .location-name {
-      font-weight: bold;
-      font-size: 1.2em;
-    }
-
-    .location-type {
-      color: #777;
-    }
-
-    .location-address {
-      margin: 5px 0;
-      font-size: 0.95em;
-      color: #444;
-    }
-
-    button {
-      background: #3f83f8;
-      color: white;
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 8px;
-    }
-
-    button:hover {
-      background: #2b6edb;
+    .info p {
+      margin: 0.3rem 0;
     }
   </style>
 </head>
 <body>
 
-<div class="location-container" id="locationList">
-  <!-- JavaScript will inject locations here -->
-</div>
+  <div class="container">
+    <h2>Cookies Location</h2>
+    <select id="locationSelect">
+      <option disabled selected>Select a location</option>
+    </select>
 
-<script>
-  const locations = [
-    {
-      name: "Bradenton",
-      type: "Pickup",
-      address: "4427 53rd Ave E, Bradenton, FL 34203"
-    },
-    {
-      name: "Brooksville",
-      type: "Pickup",
-      address: "12115 Cortez Blvd, Brooksville, FL 34613"
-    },
-    {
-      name: "Deland Woodland",
-      type: "Pickup",
-      address: "2235 S Woodland Blvd, DeLand, FL 32720"
-    },
-    {
-      name: "Tampa",
-      type: "Pickup",
-      address: "2961 N Dale Mabry Hwy, Tampa, FL 33607"
-    },
-    {
-      name: "Tampa Fletcher",
-      type: "Pickup",
-      address: "1509 E Fletcher Ave, Tampa, FL 33612"
-    }
-    // ... add all other locations as needed
-  ];
+    <div class="info" id="locationInfo" style="display:none;">
+      <p><strong>City:</strong> <span id="city"></span></p>
+      <p><strong>Address:</strong> <span id="address"></span></p>
+    </div>
+  </div>
 
-  const container = document.getElementById('locationList');
+  <script>
+    const locations = [
+      { city: "Bradenton", address: "4427 53rd Ave E, Bradenton, FL 34203" },
+      { city: "Brooksville", address: "12115 Cortez Blvd, Brooksville, FL 34613" },
+      { city: "Deland Woodland", address: "2235 S Woodland Blvd, DeLand, FL 32720" },
+      { city: "Fort Myers", address: "9962 Interstate Commerce Dr, Fort Myers, FL 33913" },
+      { city: "Gainesville", address: "626 NW 13th St, Gainesville, FL 32601" },
+      { city: "Jacksonville", address: "8215 Dix Ellis Trail, Jacksonville, FL 32256" },
+      { city: "Miami", address: "8303 Bird Rd, Miami, FL 33155" },
+      { city: "N. Miami Beach", address: "17150 Biscayne Blvd, Aventura, FL 33160" },
+      { city: "Orange Blossom", address: "9350 S Orange Blossom Trl, Orlando, FL 32837" },
+      { city: "Orange Park", address: "859 Blanding Blvd, Orange Park, FL 32065" },
+      { city: "Orlando", address: "1345 Lee Rd, Orlando, FL 32810" },
+      { city: "Palm Bay", address: "1300 Palm Bay Rd NE, Palm Bay, FL 32905" },
+      { city: "Pensacola", address: "176 E 9 Mile Rd, Pensacola, FL 32534" },
+      { city: "Port St. Lucie", address: "1401 SE Village Green Dr, Port St. Lucie, FL 34952" },
+      { city: "Tampa", address: "2961 N Dale Mabry Hwy, Tampa, FL 33607" },
+      { city: "Tampa Fletcher", address: "1509 E Fletcher Ave, Tampa, FL 33612" }
+    ];
 
-  locations.forEach(loc => {
-    const div = document.createElement('div');
-    div.className = 'location';
-    div.innerHTML = `
-      <div class="location-name">${loc.name}</div>
-      <div class="location-type">${loc.type}</div>
-      <div class="location-address">${loc.address}</div>
-      <button onclick="handleSelect('${loc.name}')">Select</button>
-    `;
-    container.appendChild(div);
-  });
+    const select = document.getElementById("locationSelect");
+    const cityEl = document.getElementById("city");
+    const addressEl = document.getElementById("address");
+    const infoBox = document.getElementById("locationInfo");
 
-  function handleSelect(location) {
-    alert(`You selected: ${location}`);
-    // TODO: Trigger filtering logic for productName, terpene, etc.
-  }
-</script>
+    // Populate dropdown
+    locations.forEach((loc, i) => {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = loc.city;
+      select.appendChild(opt);
+    });
+
+    // Update display on selection
+    select.addEventListener("change", () => {
+      const selected = locations[select.value];
+      cityEl.textContent = selected.city;
+      addressEl.textContent = selected.address;
+      infoBox.style.display = "block";
+    });
+  </script>
 
 </body>
 </html>
