@@ -20,7 +20,7 @@
     border-radius: 12px;
     box-shadow: 0 0 15px rgba(0,0,0,0.1);
     width: 700px;
-    max-height: 400px;
+    max-height: 420px;
     padding: 1rem 2rem;
   }
 
@@ -44,7 +44,8 @@
     background-color: #f0f0f0;
   }
   ul.location-list li.selected {
-    background-color: #cce5ff;
+    background-color: #007bff; /* bootstrap primary blue */
+    color: white;
     font-weight: bold;
   }
 
@@ -64,6 +65,24 @@
     margin: 6px 0;
     font-size: 1.1rem;
   }
+
+  button#selectBtn {
+    margin-top: 20px;
+    padding: 10px 18px;
+    background-color: #007bff;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    align-self: flex-start;
+  }
+
+  button#selectBtn:disabled {
+    background-color: #a0c5f7;
+    cursor: not-allowed;
+  }
 </style>
 </head>
 <body>
@@ -78,6 +97,7 @@
     <p><strong>City:</strong> <span id="city">Select a location</span></p>
     <p><strong>Type:</strong> <span id="type">-</span></p>
     <p><strong>Address:</strong> <span id="address">-</span></p>
+    <button id="selectBtn" disabled>Select</button>
   </div>
 </div>
 
@@ -105,6 +125,7 @@
   const citySpan = document.getElementById('city');
   const typeSpan = document.getElementById('type');
   const addressSpan = document.getElementById('address');
+  const selectBtn = document.getElementById('selectBtn');
 
   let selectedIndex = null;
 
@@ -113,7 +134,7 @@
     locations.forEach((loc, i) => {
       const li = document.createElement('li');
       li.textContent = loc.city;
-      li.tabIndex = 0; // Make focusable for accessibility
+      li.tabIndex = 0; // accessibility
       li.classList.toggle('selected', i === selectedIndex);
       li.addEventListener('click', () => selectLocation(i));
       li.addEventListener('keypress', e => {
@@ -131,8 +152,16 @@
     citySpan.textContent = loc.city;
     typeSpan.textContent = loc.type;
     addressSpan.textContent = loc.address;
+    selectBtn.disabled = false; // Enable button on selection
     renderLocations();
   }
+
+  selectBtn.addEventListener('click', () => {
+    if (selectedIndex === null) return;
+    const loc = locations[selectedIndex];
+    alert(`You selected:\n${loc.city}\n${loc.type}\n${loc.address}`);
+    // Put your "confirm selection" code here
+  });
 
   renderLocations();
 </script>
