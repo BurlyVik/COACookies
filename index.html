@@ -2,82 +2,134 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Cookies Locations</title>
+<title>Cookies Locations - Tiles</title>
 <style>
   body, html {
-    height: 100%;
     margin: 0;
     font-family: Arial, sans-serif;
     background: #f3f3f3;
+    min-height: 100vh;
     display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 20px;
+  }
+
+  .tiles-container {
+    max-width: 900px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(140px,1fr));
+    gap: 16px;
+  }
+
+  .tile {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #333;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .tile:hover {
+    background-color: #cce5ff;
+    box-shadow: 0 4px 14px rgba(0,123,255,0.3);
+  }
+
+  /* Modal backdrop */
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right:0;
+    bottom: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
     justify-content: center;
     align-items: center;
+    z-index: 999;
   }
 
-  .container {
+  .modal-backdrop.active {
     display: flex;
+  }
+
+  /* Modal dialog */
+  .modal {
     background: white;
     border-radius: 12px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    width: 700px;
-    max-height: 400px;
-    padding: 1rem 2rem;
+    box-shadow: 0 0 20px rgba(0,0,0,0.25);
+    max-width: 400px;
+    width: 90%;
+    padding: 24px 32px;
+    position: relative;
+    text-align: center;
   }
 
-  ul.location-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    width: 280px;
-    max-height: 360px;
-    overflow-y: auto;
-    border-right: 1px solid #ddd;
+  .modal h2 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-weight: 700;
   }
 
-  ul.location-list li {
-    padding: 12px 16px;
+  .modal p {
+    font-size: 1rem;
+    margin: 8px 0;
+  }
+
+  /* Close button (X) */
+  .modal .close-btn {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    font-size: 1.3rem;
+    border: none;
+    background: none;
     cursor: pointer;
-    border-bottom: 1px solid #eee;
+    color: #999;
+    transition: color 0.2s ease;
+  }
+  .modal .close-btn:hover {
+    color: #333;
+  }
+
+  /* Select button */
+  .modal button.select-btn {
+    margin-top: 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    cursor: pointer;
     transition: background-color 0.2s ease;
   }
-  ul.location-list li:hover {
-    background-color: #f0f0f0;
-  }
-  ul.location-list li.selected {
-    background-color: #cce5ff;
-    font-weight: bold;
-  }
-
-  .info-panel {
-    flex: 1;
-    padding-left: 24px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  .info-panel h3 {
-    margin-top: 0;
-  }
-
-  .info-panel p {
-    margin: 6px 0;
-    font-size: 1.1rem;
+  .modal button.select-btn:hover {
+    background-color: #0056b3;
   }
 </style>
 </head>
 <body>
 
-<div class="container">
-  <ul class="location-list" id="locationList">
-    <!-- JS will insert location items here -->
-  </ul>
+<div class="tiles-container" id="tilesContainer">
+  <!-- JS inserts tiles here -->
+</div>
 
-  <div class="info-panel" id="infoPanel">
-    <h3>Cookies Location</h3>
-    <p><strong>City:</strong> <span id="city">Select a location</span></p>
-    <p><strong>Type:</strong> <span id="type">-</span></p>
-    <p><strong>Address:</strong> <span id="address">-</span></p>
+<!-- Modal -->
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
+  <div class="modal" tabindex="-1">
+    <button class="close-btn" aria-label="Close dialog" id="closeBtn">&times;</button>
+    <h2 id="modalTitle">City Name</h2>
+    <p><strong>Type:</strong> <span id="modalType">-</span></p>
+    <p id="modalDesc"><strong>Address:</strong> <span id="modalAddress">-</span></p>
+    <button class="select-btn" id="selectBtn">Select</button>
   </div>
 </div>
 
@@ -101,40 +153,67 @@
     { city: "Tampa Fletcher", type: "Pickup", address: "1509 E Fletcher Ave, Tampa, FL 33612" }
   ];
 
-  const locationList = document.getElementById('locationList');
-  const citySpan = document.getElementById('city');
-  const typeSpan = document.getElementById('type');
-  const addressSpan = document.getElementById('address');
+  const tilesContainer = document.getElementById('tilesContainer');
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalType = document.getElementById('modalType');
+  const modalAddress = document.getElementById('modalAddress');
+  const selectBtn = document.getElementById('selectBtn');
+  const closeBtn = document.getElementById('closeBtn');
 
-  let selectedIndex = null;
+  let selectedLocation = null;
 
-  function renderLocations() {
-    locationList.innerHTML = '';
-    locations.forEach((loc, i) => {
-      const li = document.createElement('li');
-      li.textContent = loc.city;
-      li.tabIndex = 0; // Make focusable for accessibility
-      li.classList.toggle('selected', i === selectedIndex);
-      li.addEventListener('click', () => selectLocation(i));
-      li.addEventListener('keypress', e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          selectLocation(i);
-        }
-      });
-      locationList.appendChild(li);
+  // Create tiles
+  locations.forEach((loc, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'tile';
+    tile.textContent = loc.city;
+    tile.tabIndex = 0; // keyboard focus
+    tile.addEventListener('click', () => openModal(i));
+    tile.addEventListener('keypress', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        openModal(i);
+      }
     });
+    tilesContainer.appendChild(tile);
+  });
+
+  function openModal(index) {
+    selectedLocation = locations[index];
+    modalTitle.textContent = selectedLocation.city;
+    modalType.textContent = selectedLocation.type;
+    modalAddress.textContent = selectedLocation.address;
+    modalBackdrop.classList.add('active');
+    selectBtn.focus();
   }
 
-  function selectLocation(index) {
-    selectedIndex = index;
-    const loc = locations[index];
-    citySpan.textContent = loc.city;
-    typeSpan.textContent = loc.type;
-    addressSpan.textContent = loc.address;
-    renderLocations();
+  function closeModal() {
+    selectedLocation = null;
+    modalBackdrop.classList.remove('active');
   }
 
-  renderLocations();
+  closeBtn.addEventListener('click', closeModal);
+
+  // Close modal if clicking outside the modal content
+  modalBackdrop.addEventListener('click', e => {
+    if (e.target === modalBackdrop) {
+      closeModal();
+    }
+  });
+
+  // Select button handler
+  selectBtn.addEventListener('click', () => {
+    if (!selectedLocation) return;
+    alert(`You selected:\n${selectedLocation.city}\n${selectedLocation.type}\n${selectedLocation.address}`);
+    closeModal();
+  });
+
+  // Accessibility: close modal on Escape key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modalBackdrop.classList.contains('active')) {
+      closeModal();
+    }
+  });
 </script>
 
 </body>
