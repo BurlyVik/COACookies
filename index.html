@@ -1,63 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Cookies Locations</title>
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: Arial, sans-serif;
-      background-color: #f3f3f3;
-    }
+<meta charset="UTF-8" />
+<title>Cookies Locations</title>
+<style>
+  body, html {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f3f3f3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-    .container {
-      text-align: center;
-      background: white;
-      padding: 2rem;
-      border-radius: 16px;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
-      max-width: 420px;
-      width: 100%;
-    }
+  .container {
+    display: flex;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    width: 700px;
+    max-height: 400px;
+    padding: 1rem 2rem;
+  }
 
-    select {
-      width: 100%;
-      padding: 0.5rem;
-      margin: 1rem 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
+  ul.location-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 280px;
+    max-height: 360px;
+    overflow-y: auto;
+    border-right: 1px solid #ddd;
+  }
 
-    .info {
-      text-align: left;
-      background-color: #f2f2f2;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-top: 1rem;
-    }
+  ul.location-list li {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+  }
+  ul.location-list li:hover {
+    background-color: #f0f0f0;
+  }
+  ul.location-list li.selected {
+    background-color: #cce5ff;
+    font-weight: bold;
+  }
 
-    .info p {
-      margin: 0.3rem 0;
-    }
-  </style>
+  .info-panel {
+    flex: 1;
+    padding-left: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .info-panel h3 {
+    margin-top: 0;
+  }
+
+  .info-panel p {
+    margin: 6px 0;
+    font-size: 1.1rem;
+  }
+</style>
 </head>
 <body>
 
 <div class="container">
-  <h2>Cookies Location</h2>
-  <select id="locationSelect">
-    <option disabled selected>Select a location</option>
-  </select>
+  <ul class="location-list" id="locationList">
+    <!-- JS will insert location items here -->
+  </ul>
 
-  <div class="info" id="locationInfo" style="display:none;">
-    <p><strong>City:</strong> <span id="city"></span></p>
-    <p><strong>Type:</strong> <span id="type"></span></p>
-    <p><strong>Address:</strong> <span id="address"></span></p>
+  <div class="info-panel" id="infoPanel">
+    <h3>Cookies Location</h3>
+    <p><strong>City:</strong> <span id="city">Select a location</span></p>
+    <p><strong>Type:</strong> <span id="type">-</span></p>
+    <p><strong>Address:</strong> <span id="address">-</span></p>
   </div>
 </div>
 
@@ -81,26 +101,40 @@
     { city: "Tampa Fletcher", type: "Pickup", address: "1509 E Fletcher Ave, Tampa, FL 33612" }
   ];
 
-  const select = document.getElementById("locationSelect");
-  const cityEl = document.getElementById("city");
-  const typeEl = document.getElementById("type");
-  const addressEl = document.getElementById("address");
-  const infoBox = document.getElementById("locationInfo");
+  const locationList = document.getElementById('locationList');
+  const citySpan = document.getElementById('city');
+  const typeSpan = document.getElementById('type');
+  const addressSpan = document.getElementById('address');
 
-  locations.forEach((loc, index) => {
-    const option = document.createElement("option");
-    option.value = index;
-    option.textContent = loc.city;
-    select.appendChild(option);
-  });
+  let selectedIndex = null;
 
-  select.addEventListener("change", () => {
-    const selected = locations[select.value];
-    cityEl.textContent = selected.city;
-    typeEl.textContent = selected.type;
-    addressEl.textContent = selected.address;
-    infoBox.style.display = "block";
-  });
+  function renderLocations() {
+    locationList.innerHTML = '';
+    locations.forEach((loc, i) => {
+      const li = document.createElement('li');
+      li.textContent = loc.city;
+      li.tabIndex = 0; // Make focusable for accessibility
+      li.classList.toggle('selected', i === selectedIndex);
+      li.addEventListener('click', () => selectLocation(i));
+      li.addEventListener('keypress', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          selectLocation(i);
+        }
+      });
+      locationList.appendChild(li);
+    });
+  }
+
+  function selectLocation(index) {
+    selectedIndex = index;
+    const loc = locations[index];
+    citySpan.textContent = loc.city;
+    typeSpan.textContent = loc.type;
+    addressSpan.textContent = loc.address;
+    renderLocations();
+  }
+
+  renderLocations();
 </script>
 
 </body>
