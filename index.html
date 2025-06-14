@@ -20,7 +20,7 @@
     border-radius: 12px;
     box-shadow: 0 0 15px rgba(0,0,0,0.1);
     width: 700px;
-    max-height: 420px;
+    max-height: 400px;
     padding: 1rem 2rem;
   }
 
@@ -44,8 +44,7 @@
     background-color: #f0f0f0;
   }
   ul.location-list li.selected {
-    background-color: #007bff; /* bootstrap primary blue */
-    color: white;
+    background-color: #cce5ff;
     font-weight: bold;
   }
 
@@ -66,6 +65,7 @@
     font-size: 1.1rem;
   }
 
+  /* Select button styling */
   button#selectBtn {
     margin-top: 20px;
     padding: 10px 18px;
@@ -134,7 +134,7 @@
     locations.forEach((loc, i) => {
       const li = document.createElement('li');
       li.textContent = loc.city;
-      li.tabIndex = 0; // accessibility
+      li.tabIndex = 0; // Make focusable for accessibility
       li.classList.toggle('selected', i === selectedIndex);
       li.addEventListener('click', () => selectLocation(i));
       li.addEventListener('keypress', e => {
@@ -152,7 +152,7 @@
     citySpan.textContent = loc.city;
     typeSpan.textContent = loc.type;
     addressSpan.textContent = loc.address;
-    selectBtn.disabled = false; // Enable button on selection
+    selectBtn.disabled = false; // Enable button after selection
     renderLocations();
   }
 
@@ -160,7 +160,7 @@
     if (selectedIndex === null) return;
     const loc = locations[selectedIndex];
     alert(`You selected:\n${loc.city}\n${loc.type}\n${loc.address}`);
-    // Put your "confirm selection" code here
+    // Replace alert with your custom logic as needed
   });
 
   renderLocations();
