@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Select a Location</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #f0f2f5;
+    }
+
+    .location-container {
+      width: 90%;
+      max-width: 600px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      overflow-y: auto;
+      max-height: 90vh;
+    }
+
+    .location {
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
+    }
+
+    .location:last-child {
+      border-bottom: none;
+    }
+
+    .location-name {
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+
+    .location-type {
+      color: #777;
+    }
+
+    .location-address {
+      margin: 5px 0;
+      font-size: 0.95em;
+      color: #444;
+    }
+
+    button {
+      background: #3f83f8;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    button:hover {
+      background: #2b6edb;
+    }
+  </style>
+</head>
+<body>
+
+<div class="location-container" id="locationList">
+  <!-- JavaScript will inject locations here -->
+</div>
+
+<script>
+  const locations = [
+    {
+      name: "Bradenton",
+      type: "Pickup",
+      address: "4427 53rd Ave E, Bradenton, FL 34203"
+    },
+    {
+      name: "Brooksville",
+      type: "Pickup",
+      address: "12115 Cortez Blvd, Brooksville, FL 34613"
+    },
+    {
+      name: "Deland Woodland",
+      type: "Pickup",
+      address: "2235 S Woodland Blvd, DeLand, FL 32720"
+    },
+    {
+      name: "Tampa",
+      type: "Pickup",
+      address: "2961 N Dale Mabry Hwy, Tampa, FL 33607"
+    },
+    {
+      name: "Tampa Fletcher",
+      type: "Pickup",
+      address: "1509 E Fletcher Ave, Tampa, FL 33612"
+    }
+    // ... add all other locations as needed
+  ];
+
+  const container = document.getElementById('locationList');
+
+  locations.forEach(loc => {
+    const div = document.createElement('div');
+    div.className = 'location';
+    div.innerHTML = `
+      <div class="location-name">${loc.name}</div>
+      <div class="location-type">${loc.type}</div>
+      <div class="location-address">${loc.address}</div>
+      <button onclick="handleSelect('${loc.name}')">Select</button>
+    `;
+    container.appendChild(div);
+  });
+
+  function handleSelect(location) {
+    alert(`You selected: ${location}`);
+    // TODO: Trigger filtering logic for productName, terpene, etc.
+  }
+</script>
+
+</body>
+</html>
