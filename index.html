@@ -4,22 +4,25 @@
 <meta charset="UTF-8" />
 <title>Cookies Locations - Tiles</title>
 <style>
-  body, html {
+  html, body {
     margin: 0;
+    height: 100%;
     font-family: Arial, sans-serif;
     background: #f3f3f3;
-    min-height: 100vh;
+  }
+
+  body {
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    padding: 40px 20px;
+    align-items: center;
   }
 
   .tiles-container {
-    max-width: 900px;
-    width: 100%;
+    width: 720px; /* 4 tiles * 180px each */
+    height: 720px; /* 4 tiles * 180px each */
     display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(140px,1fr));
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
     gap: 16px;
   }
 
@@ -27,14 +30,19 @@
     background: white;
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    padding: 20px;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     font-weight: bold;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     color: #333;
     cursor: pointer;
     user-select: none;
     transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    height: 180px;
+    width: 180px;
+    text-align: center;
+    padding: 10px;
   }
 
   .tile:hover {
@@ -194,21 +202,18 @@
 
   closeBtn.addEventListener('click', closeModal);
 
-  // Close modal if clicking outside the modal content
   modalBackdrop.addEventListener('click', e => {
     if (e.target === modalBackdrop) {
       closeModal();
     }
   });
 
-  // Select button handler
   selectBtn.addEventListener('click', () => {
     if (!selectedLocation) return;
     alert(`You selected:\n${selectedLocation.city}\n${selectedLocation.type}\n${selectedLocation.address}`);
     closeModal();
   });
 
-  // Accessibility: close modal on Escape key
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && modalBackdrop.classList.contains('active')) {
       closeModal();
