@@ -1,142 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Cookies Locations - Tiles</title>
-<style>
-  html, body {
-    margin: 0;
-    height: 100%;
-    font-family: Arial, sans-serif;
-    background: #f3f3f3;
-  }
+  <meta charset="UTF-8" />
+  <title>Cookies Locations - Tiles with Maps</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #f3f3f3;
+    }
 
-  body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-  .tiles-container {
-    width: 720px; /* 4 tiles * 180px each */
-    height: 720px; /* 4 tiles * 180px each */
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(4, 1fr);
-    gap: 16px;
-  }
+    .tiles-container {
+      width: 800px;
+      height: 800px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 16px;
+    }
 
-  .tile {
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    font-size: 1.3rem;
-    color: #333;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease;
-    height: 180px;
-    width: 180px;
-    text-align: center;
-    padding: 10px;
-  }
+    .tile {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #333;
+      cursor: pointer;
+      user-select: none;
+      text-align: center;
+      transition: background-color 0.2s ease;
+      padding: 10px;
+    }
 
-  .tile:hover {
-    background-color: #cce5ff;
-    box-shadow: 0 4px 14px rgba(0,123,255,0.3);
-  }
+    .tile:hover {
+      background-color: #cce5ff;
+    }
 
-  /* Modal backdrop */
-  .modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right:0;
-    bottom: 0;
-    background: rgba(0,0,0,0.4);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 999;
-  }
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
 
-  .modal-backdrop.active {
-    display: flex;
-  }
+    .modal-backdrop.active {
+      display: flex;
+    }
 
-  /* Modal dialog */
-  .modal {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.25);
-    max-width: 400px;
-    width: 90%;
-    padding: 24px 32px;
-    position: relative;
-    text-align: center;
-  }
+    .modal {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.25);
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 20px;
+      position: relative;
+    }
 
-  .modal h2 {
-    margin-top: 0;
-    margin-bottom: 12px;
-    font-weight: 700;
-  }
+    .modal h2 {
+      margin-top: 0;
+    }
 
-  .modal p {
-    font-size: 1rem;
-    margin: 8px 0;
-  }
+    .modal p {
+      margin: 8px 0;
+    }
 
-  /* Close button (X) */
-  .modal .close-btn {
-    position: absolute;
-    top: 12px;
-    right: 14px;
-    font-size: 1.3rem;
-    border: none;
-    background: none;
-    cursor: pointer;
-    color: #999;
-    transition: color 0.2s ease;
-  }
-  .modal .close-btn:hover {
-    color: #333;
-  }
+    .close-btn {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      font-size: 1.3rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: #999;
+    }
 
-  /* Select button */
-  .modal button.select-btn {
-    margin-top: 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 6px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-  .modal button.select-btn:hover {
-    background-color: #0056b3;
-  }
-</style>
+    .close-btn:hover {
+      color: #000;
+    }
+
+    .select-btn {
+      margin-top: 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .select-btn:hover {
+      background-color: #0056b3;
+    }
+
+    .map-container {
+      margin-top: 10px;
+      height: 300px;
+      width: 100%;
+    }
+
+    .map-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 8px;
+    }
+  </style>
 </head>
 <body>
 
-<div class="tiles-container" id="tilesContainer">
-  <!-- JS inserts tiles here -->
-</div>
+<div class="tiles-container" id="tilesContainer"></div>
 
-<!-- Modal -->
-<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
-  <div class="modal" tabindex="-1">
-    <button class="close-btn" aria-label="Close dialog" id="closeBtn">&times;</button>
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <button class="close-btn" id="closeBtn">&times;</button>
     <h2 id="modalTitle">City Name</h2>
     <p><strong>Type:</strong> <span id="modalType">-</span></p>
-    <p id="modalDesc"><strong>Address:</strong> <span id="modalAddress">-</span></p>
+    <p><strong>Address:</strong> <span id="modalAddress">-</span></p>
+    <div class="map-container" id="mapContainer"></div>
     <button class="select-btn" id="selectBtn">Select</button>
   </div>
 </div>
@@ -166,58 +165,53 @@
   const modalTitle = document.getElementById('modalTitle');
   const modalType = document.getElementById('modalType');
   const modalAddress = document.getElementById('modalAddress');
-  const selectBtn = document.getElementById('selectBtn');
+  const mapContainer = document.getElementById('mapContainer');
   const closeBtn = document.getElementById('closeBtn');
+  const selectBtn = document.getElementById('selectBtn');
 
   let selectedLocation = null;
-
-  // Create tiles
-  locations.forEach((loc, i) => {
-    const tile = document.createElement('div');
-    tile.className = 'tile';
-    tile.textContent = loc.city;
-    tile.tabIndex = 0; // keyboard focus
-    tile.addEventListener('click', () => openModal(i));
-    tile.addEventListener('keypress', e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        openModal(i);
-      }
-    });
-    tilesContainer.appendChild(tile);
-  });
 
   function openModal(index) {
     selectedLocation = locations[index];
     modalTitle.textContent = selectedLocation.city;
     modalType.textContent = selectedLocation.type;
     modalAddress.textContent = selectedLocation.address;
+
+    const encoded = encodeURIComponent(selectedLocation.address);
+    const mapURL = `https://www.google.com/maps?q=${encoded}&output=embed`;
+
+    mapContainer.innerHTML = `<iframe src="${mapURL}" allowfullscreen loading="lazy"></iframe>`;
     modalBackdrop.classList.add('active');
-    selectBtn.focus();
   }
 
   function closeModal() {
-    selectedLocation = null;
     modalBackdrop.classList.remove('active');
+    selectedLocation = null;
+    mapContainer.innerHTML = '';
   }
 
-  closeBtn.addEventListener('click', closeModal);
+  locations.forEach((loc, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'tile';
+    tile.textContent = loc.city;
+    tile.addEventListener('click', () => openModal(i));
+    tilesContainer.appendChild(tile);
+  });
 
+  closeBtn.addEventListener('click', closeModal);
   modalBackdrop.addEventListener('click', e => {
-    if (e.target === modalBackdrop) {
-      closeModal();
-    }
+    if (e.target === modalBackdrop) closeModal();
   });
 
   selectBtn.addEventListener('click', () => {
-    if (!selectedLocation) return;
-    alert(`You selected:\n${selectedLocation.city}\n${selectedLocation.type}\n${selectedLocation.address}`);
-    closeModal();
+    if (selectedLocation) {
+      alert(`You selected:\n${selectedLocation.city}\n${selectedLocation.type}\n${selectedLocation.address}`);
+      closeModal();
+    }
   });
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && modalBackdrop.classList.contains('active')) {
-      closeModal();
-    }
+    if (e.key === 'Escape') closeModal();
   });
 </script>
 
