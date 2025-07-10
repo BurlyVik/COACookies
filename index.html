@@ -39,12 +39,13 @@
     }
 
     .tiles-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
-  width: 100%;
-  max-width: 900px;
-}
+      width: 800px;
+      height: 800px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 16px;
+    }
 
     .tile {
       background: white;
@@ -131,8 +132,6 @@
       background-color: #0056b3;
     }
 
-   
-
     .map-container {
       margin-top: 10px;
       height: 300px;
@@ -209,9 +208,9 @@
       modalAddress.textContent = selectedLocation.address;
 
       const encoded = encodeURIComponent(selectedLocation.address);
-      const mapURL = `https://www.google.com/maps?q=${encoded}&output=embed`;
+      const mapURL = https://www.google.com/maps?q=${encoded}&output=embed;
 
-      mapContainer.innerHTML = `<iframe src="${mapURL}" allowfullscreen loading="lazy"></iframe>`;
+      mapContainer.innerHTML = <iframe src="${mapURL}" allowfullscreen loading="lazy"></iframe>;
       modalBackdrop.classList.add('active');
     }
 
@@ -224,7 +223,6 @@
     locations.forEach((loc, i) => {
       const tile = document.createElement('div');
       tile.className = 'tile';
-      tile.classList.add('selected-tile');
       tile.textContent = loc.city;
       tile.addEventListener('click', () => openModal(i));
       tilesContainer.appendChild(tile);
@@ -237,7 +235,7 @@
 
     selectBtn.addEventListener('click', () => {
       if (selectedLocation) {
-        alert(`You selected:\n${selectedLocation.city}\n${selectedLocation.type}\n${selectedLocation.address}`);
+        alert(You selected:\n${selectedLocation.city}\n${selectedLocation.type}\n${selectedLocation.address});
         closeModal();
       }
     });
