@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Terpene Profiles</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 8px 12px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      position: sticky;
+      top: 0;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #eef;
+    }
+
+    .error {
+      color: red;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 id="pageTitle">Terpene Profile</h1>
+  <div id="tableContainer"></div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const citySlug = urlParams.get("city");
+
+    const title = citySlug ? citySlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : "Unknown";
+    document.getElementById("pageTitle").textContent = `Terpenes — ${title}`;
+
+    const tableContainer = document.getElementById("tableContainer");
+
+    fetch(`data/terpenes-${citySlug}.json`)
+      .then(response => {
+        if (!response.ok) throw new Error("Data not found");
+        return response.json();
+      })
+      .then(data => renderTable(data))
+      .catch(err => {
+        tableContainer.innerHTML = `<p class="error">No data found for "${title}".</p>`;
+      });
+
+    function renderTable(data) {
+      if (!data.length) {
+        tableContainer.innerHTML = `<p class="error">No products found.</p>`;
+        return;
+      }
+
+      const columns = Object.keys(data[0]);
+      const table = document.createElement("table");
+
+      const thead = table.createTHead();
+      const headRow = thead.insertRow();
+      columns.forEach(col => {
+        const th = document.createElement("th");
+        th.textContent = col;
+        th.onclick = () => sortTableByColumn(data, col);
+        headRow.appendChild(th);
+      });
+
+      const tbody = table.createTBody();
+      data.forEach(row => {
+        const tr = tbody.insertRow();
+        columns.forEach(col => {
+          const td = tr.insertCell();
+          td.textContent = row[col] ?? "";
+        });
+      });
+
+      tableContainer.innerHTML = "";
+      tableContainer.appendChild(table);
+    }
+
+    function sortTableByColumn(data, column) {
+      const numeric = data.every(row => !isNaN(parseFloat(row[column])));
+      const sorted = [...data].sort((a, b) => {
+        const aVal = a[column] ?? '';
+        const bVal = b[column] ?? '';
+        return numeric
+          ? parseFloat(bVal) - parseFloat(aVal)
+          : aVal.localeCompare(bVal);
+      });
+      renderTable(sorted);
+    }
+  </script>
+</body>
+</html>
