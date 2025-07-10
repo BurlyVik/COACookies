@@ -131,6 +131,11 @@
       background-color: #0056b3;
     }
 
+    .selected-tile {
+  border: 2px solid #007bff;
+  background-color: #e6f2ff;
+}
+
     .map-container {
       margin-top: 10px;
       height: 300px;
@@ -222,6 +227,7 @@
     locations.forEach((loc, i) => {
       const tile = document.createElement('div');
       tile.className = 'tile';
+      tile.classList.add('selected-tile');
       tile.textContent = loc.city;
       tile.addEventListener('click', () => openModal(i));
       tilesContainer.appendChild(tile);
