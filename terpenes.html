@@ -2,48 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Terpene Profiles</title>
+  <title>Live Terpene Viewer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
       padding: 20px;
+      background: #f5f5f5;
     }
-
     h1 {
       text-align: center;
-      margin-bottom: 20px;
     }
-
+    #status {
+      text-align: center;
+      margin-top: 10px;
+      color: #666;
+    }
     table {
       width: 100%;
+      margin-top: 20px;
       border-collapse: collapse;
-      background: #fff;
+      background: white;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
     th, td {
-      padding: 8px 12px;
+      padding: 8px;
+      border: 1px solid #ccc;
       text-align: center;
-      border: 1px solid #ddd;
     }
-
     th {
-      background-color: #007bff;
+      background: #007bff;
       color: white;
       cursor: pointer;
-      position: sticky;
-      top: 0;
     }
-
     tr:nth-child(even) {
-      background-color: #f9f9f9;
+      background: #f9f9f9;
     }
-
-    tr:hover {
-      background-color: #eef;
-    }
-
     .error {
       color: red;
       text-align: center;
@@ -51,44 +44,69 @@
   </style>
 </head>
 <body>
-
-  <h1 id="pageTitle">Terpene Profile</h1>
+  <h1 id="pageTitle">Terpene Data</h1>
+  <div id="status">Loading...</div>
   <div id="tableContainer"></div>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const citySlug = urlParams.get("city");
+    const params = new URLSearchParams(window.location.search);
+    const retailer = params.get("retailer") || "tampa"; // default fallback
+    const displayName = retailer.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    document.getElementById("pageTitle").textContent = `Terpenes — ${displayName}`;
 
-    const title = citySlug ? citySlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : "Unknown";
-    document.getElementById("pageTitle").textContent = `Terpenes — ${title}`;
+    const apiUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes`;
 
-    const tableContainer = document.getElementById("tableContainer");
-
-    fetch(`data/terpenes-${citySlug}.json`)
-      .then(response => {
-        if (!response.ok) throw new Error("Data not found");
-        return response.json();
+    fetch(apiUrl)
+      .then(res => res.text())
+      .then(data => {
+        const fixedJson = fixMalformedJson(data);
+        const parsed = JSON.parse(fixedJson);
+        const products = parsed.flatMap(p => p.results ?? []);
+        renderTerpeneTable(products);
       })
-      .then(data => renderTable(data))
       .catch(err => {
-        tableContainer.innerHTML = `<p class="error">No data found for "${title}".</p>`;
+        document.getElementById("status").innerHTML = `<p class="error">Failed to load data for <strong>${displayName}</strong>.</p>`;
+        console.error(err);
       });
 
-    function renderTable(data) {
-      if (!data.length) {
-        tableContainer.innerHTML = `<p class="error">No products found.</p>`;
+    function fixMalformedJson(raw) {
+      const trimmed = raw.trim();
+      const needsStart = !trimmed.startsWith("[");
+      const needsEnd = !trimmed.endsWith("]");
+      return `${needsStart ? "[" : ""}${trimmed}${needsEnd ? "]" : ""}`;
+    }
+
+    function renderTerpeneTable(products) {
+      if (!products.length) {
+        document.getElementById("status").textContent = "No products found.";
         return;
       }
 
-      const columns = Object.keys(data[0]);
-      const table = document.createElement("table");
+      const allTerpenes = [...new Set(products.flatMap(p =>
+        (p.terpenes ?? []).map(t => t.name).filter(Boolean)
+      ))].sort();
 
+      const columns = ["ProductName", ...allTerpenes];
+      const rows = products.map(p => {
+        const map = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
+        return {
+          ProductName: p.name,
+          ...Object.fromEntries(allTerpenes.map(t => [t, map[t] ?? ""]))
+        };
+      });
+
+      createSortableTable(columns, rows);
+      document.getElementById("status").textContent = `Loaded ${rows.length} products.`;
+    }
+
+    function createSortableTable(columns, data) {
+      const table = document.createElement("table");
       const thead = table.createTHead();
       const headRow = thead.insertRow();
       columns.forEach(col => {
         const th = document.createElement("th");
         th.textContent = col;
-        th.onclick = () => sortTableByColumn(data, col);
+        th.addEventListener("click", () => sortBy(col, data));
         headRow.appendChild(th);
       });
 
@@ -101,20 +119,19 @@
         });
       });
 
-      tableContainer.innerHTML = "";
-      tableContainer.appendChild(table);
+      const container = document.getElementById("tableContainer");
+      container.innerHTML = "";
+      container.appendChild(table);
     }
 
-    function sortTableByColumn(data, column) {
-      const numeric = data.every(row => !isNaN(parseFloat(row[column])));
+    function sortBy(col, data) {
+      const isNumeric = data.every(row => !isNaN(parseFloat(row[col])) || row[col] === "");
       const sorted = [...data].sort((a, b) => {
-        const aVal = a[column] ?? '';
-        const bVal = b[column] ?? '';
-        return numeric
-          ? parseFloat(bVal) - parseFloat(aVal)
-          : aVal.localeCompare(bVal);
+        const av = isNumeric ? parseFloat(a[col]) || 0 : (a[col] || "").toLowerCase();
+        const bv = isNumeric ? parseFloat(b[col]) || 0 : (b[col] || "").toLowerCase();
+        return isNumeric ? bv - av : av.localeCompare(bv);
       });
-      renderTable(sorted);
+      createSortableTable(Object.keys(sorted[0]), sorted);
     }
   </script>
 </body>
