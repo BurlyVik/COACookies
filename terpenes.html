@@ -151,7 +151,7 @@
       const rows = products.map(p => {
         const map = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
         return {
-          ProductName: `<a href="${p.permalink}" target="_blank">${p.name}</a>`,
+          ProductName: `<a href="${p.permalink || '#'}" target="_blank">${p.name}</a>`,
           Price: p.price ? `$${parseFloat(p.price).toFixed(2)}` : "-",
           __priceValue: p.price ? parseFloat(p.price) : null,
           ...Object.fromEntries(allTerpenes.map(t => [t, map[t] ?? ""]))
