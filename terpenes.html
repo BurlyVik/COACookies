@@ -90,6 +90,13 @@
     td.highlight-cell {
       border: 1px solid black !important;
     }
+    a.product-link {
+      color: #007bff;
+      text-decoration: none;
+    }
+    a.product-link:hover {
+      text-decoration: underline;
+    }
     @media (max-width: 768px) {
       table {
         font-size: 0.75rem;
@@ -149,15 +156,13 @@
         return;
       }
 
-      const allTerpenes = [...new Set(products.flatMap(p =>
-        (p.terpenes ?? []).map(t => t.name).filter(Boolean)
-      ))].sort();
+      const allTerpenes = [...new Set(products.flatMap(p => (p.terpenes ?? []).map(t => t.name).filter(Boolean)))].sort();
 
       const columns = ["ProductName", "Delivery", ...allTerpenes];
       const rows = products.map(p => {
         const map = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
         return {
-          ProductName: { text: p.name, url: p.url },
+          ProductName: { text: p.name, url: p.permalink },
           Delivery: p.subcategory || "",
           ...Object.fromEntries(allTerpenes.map(t => [t, map[t] ?? ""]))
         };
@@ -171,7 +176,7 @@
       const table = document.createElement("table");
       const thead = table.createTHead();
       const headRow = thead.insertRow();
-      columns.forEach((col) => {
+      columns.forEach(col => {
         const th = document.createElement("th");
         const isTerpene = terpeneDescriptions[col];
         th.innerHTML = isTerpene ? `${col}<span class="info-icon" onclick="showDescription(event, '${col}')">i</span>` : col;
@@ -185,7 +190,7 @@
         columns.forEach((col, colIndex) => {
           const td = tr.insertCell();
           if (col === "ProductName" && row[col]?.url) {
-            td.innerHTML = `<a href="${row[col].url}" target="_blank">${row[col].text}</a>`;
+            td.innerHTML = `<a class="product-link" href="${row[col].url}" target="_blank">${row[col].text}</a>`;
           } else {
             td.textContent = row[col]?.text || row[col] || "";
           }
