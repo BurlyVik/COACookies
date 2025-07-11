@@ -28,6 +28,8 @@
       background: white;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       font-size: 0.8rem;
+      table-layout: fixed;
+      word-wrap: break-word;
     }
     th, td {
       padding: 6px;
@@ -79,14 +81,17 @@
       color: red;
       text-align: center;
     }
-    @media (max-width: 600px) {
-      th, td {
-        padding: 4px;
-        font-size: 0.7rem;
+    @media (max-width: 768px) {
+      table {
+        font-size: 0.75rem;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
       }
       .overlay-content {
         font-size: 0.85rem;
         padding: 15px;
+        width: 90%;
       }
       .info-icon {
         padding: 2px 5px;
