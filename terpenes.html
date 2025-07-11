@@ -81,11 +81,14 @@
       color: red;
       text-align: center;
     }
-    .highlight-row {
+    td.highlight-row {
       background-color: #d0eaff !important;
     }
-    .highlight-col {
+    td.highlight-col {
       background-color: #d0eaff !important;
+    }
+    th.highlight-col {
+      background-color: #007bff !important;
     }
     @media (max-width: 768px) {
       table {
@@ -167,7 +170,7 @@
       const table = document.createElement("table");
       const thead = table.createTHead();
       const headRow = thead.insertRow();
-      columns.forEach((col, colIndex) => {
+      columns.forEach((col) => {
         const th = document.createElement("th");
         const isTerpene = terpeneDescriptions[col];
         th.innerHTML = isTerpene ? `${col}<span class="info-icon" onclick="showDescription(event, '${col}')">i</span>` : col;
@@ -194,10 +197,12 @@
     function highlight(table, rowIndex, colIndex) {
       clearHighlights(table);
       const rows = table.rows;
-      for (let i = 0; i < rows.length; i++) {
+      for (let i = 1; i < rows.length; i++) {
         if (rows[i].cells[colIndex]) rows[i].cells[colIndex].classList.add("highlight-col");
       }
-      if (rows[rowIndex]) rows[rowIndex].classList.add("highlight-row");
+      if (rows[rowIndex]) {
+        [...rows[rowIndex].cells].forEach(cell => cell.classList.add("highlight-row"));
+      }
     }
 
     function clearHighlights(table) {
