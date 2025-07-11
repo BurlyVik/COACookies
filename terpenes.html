@@ -81,6 +81,9 @@
       color: red;
       text-align: center;
     }
+    .highlight-cheap {
+      background-color: #d4edda !important;
+    }
     @media (max-width: 768px) {
       table {
         font-size: 0.75rem;
@@ -144,16 +147,24 @@
         (p.terpenes ?? []).map(t => t.name).filter(Boolean)
       ))].sort();
 
-      const columns = ["ProductName", ...allTerpenes];
+      const columns = ["ProductName", "Price", ...allTerpenes];
       const rows = products.map(p => {
         const map = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
         return {
-          ProductName: p.name,
+          ProductName: `<a href="${p.permalink}" target="_blank">${p.name}</a>`,
+          Price: p.price ? `$${parseFloat(p.price).toFixed(2)}` : "-",
+          __priceValue: p.price ? parseFloat(p.price) : null,
           ...Object.fromEntries(allTerpenes.map(t => [t, map[t] ?? ""]))
         };
       });
 
-      createSortableTable(columns, rows);
+      const sorted = rows.sort((a, b) => {
+        if (a.__priceValue === null) return 1;
+        if (b.__priceValue === null) return -1;
+        return a.__priceValue - b.__priceValue;
+      });
+
+      createSortableTable(columns, sorted);
       document.getElementById("status").textContent = `Loaded ${rows.length} products.`;
     }
 
@@ -172,9 +183,12 @@
       const tbody = table.createTBody();
       data.forEach(row => {
         const tr = tbody.insertRow();
+        if (row.__priceValue !== null && row.__priceValue <= 30) {
+          tr.classList.add("highlight-cheap");
+        }
         columns.forEach(col => {
           const td = tr.insertCell();
-          td.textContent = row[col] ?? "";
+          td.innerHTML = row[col] ?? "";
         });
       });
 
@@ -191,10 +205,10 @@
     }
 
     function sortBy(col, data) {
-      const isNumeric = data.every(row => !isNaN(parseFloat(row[col])) || row[col] === "");
+      const isNumeric = col === "Price" || data.every(row => !isNaN(parseFloat(row[col])) || row[col] === "");
       const sorted = [...data].sort((a, b) => {
-        const av = isNumeric ? parseFloat(a[col]) || 0 : (a[col] || "").toLowerCase();
-        const bv = isNumeric ? parseFloat(b[col]) || 0 : (b[col] || "").toLowerCase();
+        const av = isNumeric ? (col === "Price" ? a.__priceValue || 0 : parseFloat(a[col]) || 0) : (a[col] || "").toLowerCase();
+        const bv = isNumeric ? (col === "Price" ? b.__priceValue || 0 : parseFloat(b[col]) || 0) : (b[col] || "").toLowerCase();
         return isNumeric ? bv - av : av.localeCompare(bv);
       });
       createSortableTable(Object.keys(sorted[0]), sorted);
