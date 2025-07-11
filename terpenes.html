@@ -157,7 +157,7 @@
       const rows = products.map(p => {
         const map = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
         return {
-          ProductName: p.name,
+          ProductName: { text: p.name, url: p.url },
           Delivery: p.subcategory || "",
           ...Object.fromEntries(allTerpenes.map(t => [t, map[t] ?? ""]))
         };
@@ -184,7 +184,11 @@
         const tr = tbody.insertRow();
         columns.forEach((col, colIndex) => {
           const td = tr.insertCell();
-          td.textContent = row[col] ?? "";
+          if (col === "ProductName" && row[col]?.url) {
+            td.innerHTML = `<a href="${row[col].url}" target="_blank">${row[col].text}</a>`;
+          } else {
+            td.textContent = row[col]?.text || row[col] || "";
+          }
           td.addEventListener("mouseenter", () => highlight(table, rowIndex + 1, colIndex));
           td.addEventListener("mouseleave", () => clearHighlights(table));
         });
@@ -224,8 +228,8 @@
     function sortBy(col, data) {
       const isNumeric = data.every(row => !isNaN(parseFloat(row[col])) || row[col] === "");
       const sorted = [...data].sort((a, b) => {
-        const av = isNumeric ? parseFloat(a[col]) || 0 : (a[col] || "").toLowerCase();
-        const bv = isNumeric ? parseFloat(b[col]) || 0 : (b[col] || "").toLowerCase();
+        const av = isNumeric ? parseFloat(a[col]) || 0 : (a[col]?.text || a[col] || "").toLowerCase();
+        const bv = isNumeric ? parseFloat(b[col]) || 0 : (b[col]?.text || b[col] || "").toLowerCase();
         return isNumeric ? bv - av : av.localeCompare(bv);
       });
       createSortableTable(Object.keys(sorted[0]), sorted);
