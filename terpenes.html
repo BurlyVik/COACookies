@@ -81,9 +81,6 @@
       color: red;
       text-align: center;
     }
-    .highlight-cheap {
-      background-color: #d4edda !important;
-    }
     @media (max-width: 768px) {
       table {
         font-size: 0.75rem;
@@ -113,9 +110,9 @@
     const params = new URLSearchParams(window.location.search);
     const retailer = params.get("retailer") || "tampa";
     const displayName = retailer.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    document.getElementById("pageTitle").textContent = `Terpenes — ${displayName}`;
+    document.getElementById("pageTitle").textContent = Terpenes — ${displayName};
 
-    const apiUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes`;
+    const apiUrl = https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes;
 
     fetch(apiUrl)
       .then(res => res.text())
@@ -126,7 +123,7 @@
         renderTerpeneTable(products);
       })
       .catch(err => {
-        document.getElementById("status").innerHTML = `<p class="error">Failed to load data for <strong>${displayName}</strong>.</p>`;
+        document.getElementById("status").innerHTML = <p class="error">Failed to load data for <strong>${displayName}</strong>.</p>;
         console.error(err);
       });
 
@@ -134,7 +131,7 @@
       const trimmed = raw.trim();
       const needsStart = !trimmed.startsWith("[");
       const needsEnd = !trimmed.endsWith("]");
-      return `${needsStart ? "[" : ""}${trimmed}${needsEnd ? "]" : ""}`;
+      return ${needsStart ? "[" : ""}${trimmed}${needsEnd ? "]" : ""};
     }
 
     function renderTerpeneTable(products) {
@@ -147,25 +144,17 @@
         (p.terpenes ?? []).map(t => t.name).filter(Boolean)
       ))].sort();
 
-      const columns = ["ProductName", "Price", ...allTerpenes];
+      const columns = ["ProductName", ...allTerpenes];
       const rows = products.map(p => {
         const map = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
         return {
-          ProductName: p.permalink ? `<a href="${p.permalink}" target="_blank">${p.name}</a>` : p.name,
-          Price: p.price ? `$${parseFloat(p.price).toFixed(2)}` : "-",
-          __priceValue: p.price ? parseFloat(p.price) : null,
+          ProductName: p.name,
           ...Object.fromEntries(allTerpenes.map(t => [t, map[t] ?? ""]))
         };
       });
 
-      const sorted = rows.sort((a, b) => {
-        if (a.__priceValue === null) return 1;
-        if (b.__priceValue === null) return -1;
-        return a.__priceValue - b.__priceValue;
-      });
-
-      createSortableTable(columns, sorted);
-      document.getElementById("status").textContent = `Loaded ${rows.length} products.`;
+      createSortableTable(columns, rows);
+      document.getElementById("status").textContent = Loaded ${rows.length} products.;
     }
 
     function createSortableTable(columns, data) {
@@ -175,7 +164,7 @@
       columns.forEach(col => {
         const th = document.createElement("th");
         const isTerpene = terpeneDescriptions[col];
-        th.innerHTML = isTerpene ? `${col}<span class="info-icon" onclick="showDescription(event, '${col}')">i</span>` : col;
+        th.innerHTML = isTerpene ? ${col}<span class="info-icon" onclick="showDescription(event, '${col}')">i</span> : col;
         th.addEventListener("click", () => sortBy(col, data));
         headRow.appendChild(th);
       });
@@ -183,12 +172,9 @@
       const tbody = table.createTBody();
       data.forEach(row => {
         const tr = tbody.insertRow();
-        if (row.__priceValue !== null && row.__priceValue <= 30) {
-          tr.classList.add("highlight-cheap");
-        }
         columns.forEach(col => {
           const td = tr.insertCell();
-          td.innerHTML = row[col] ?? "";
+          td.textContent = row[col] ?? "";
         });
       });
 
@@ -205,30 +191,30 @@
     }
 
     function sortBy(col, data) {
-      const isNumeric = col === "Price" || data.every(row => !isNaN(parseFloat(row[col])) || row[col] === "");
+      const isNumeric = data.every(row => !isNaN(parseFloat(row[col])) || row[col] === "");
       const sorted = [...data].sort((a, b) => {
-        const av = isNumeric ? (col === "Price" ? a.__priceValue || 0 : parseFloat(a[col]) || 0) : (a[col] || "").toLowerCase();
-        const bv = isNumeric ? (col === "Price" ? b.__priceValue || 0 : parseFloat(b[col]) || 0) : (b[col] || "").toLowerCase();
+        const av = isNumeric ? parseFloat(a[col]) || 0 : (a[col] || "").toLowerCase();
+        const bv = isNumeric ? parseFloat(b[col]) || 0 : (b[col] || "").toLowerCase();
         return isNumeric ? bv - av : av.localeCompare(bv);
       });
       createSortableTable(Object.keys(sorted[0]), sorted);
     }
 
     const terpeneDescriptions = {
-      "Alpha Pinene": `🌲 <strong>Alpha Pinene</strong><br><br>• Smells like: Pine trees<br>• Feels like: Focused, alert, awake<br>• Helps with: Memory, asthma (opens airways)<br>• Real life: Found in pine needles, rosemary`,
-      "Beta Caryophyllene": `🧁 <strong>Beta Caryophyllene</strong><br><br>• Smells like: Peppery, spicy<br>• Feels like: Calm, pain relief<br>• Helps with: Anxiety, inflammation<br>• Cool fact: Binds to cannabinoid receptors`,
-      "Beta Myrcene": `🛋 <strong>Beta Myrcene</strong><br><br>• Smells like: Earthy, musky, mango<br>• Feels like: Super relaxed, sleepy<br>• Helps with: Pain, insomnia<br>• High dose = couch-lock`,
-      "Beta Pinene": `🌿 <strong>Beta Pinene</strong><br><br>• Smells like: Pine, herbs<br>• Feels like: Energized, clear-headed<br>• Helps with: Memory, mood, allergies`,
-      "Camphene": `🔥 <strong>Camphene</strong><br><br>• Smells like: Camphor (like Vicks VapoRub)<br>• Feels like: Clean, breathing easier<br>• Helps with: Inflammation, heart health (early studies)`,
-      "Caryophyllene Oxide": `🌶 <strong>Caryophyllene Oxide</strong><br><br>• Smells like: Spicy, woody<br>• Feels like: Calm, anti-inflammatory<br>• Helps with: Stress, fungi<br>• Bonus: What drug-sniffing dogs smell in weed`,
-      "Geraniol": `🌸 <strong>Geraniol</strong><br><br>• Smells like: Roses, sweet flowers<br>• Feels like: Uplifted, calm<br>• Helps with: Antioxidant support, possible anti-cancer benefits`,
-      "Humulene": `🍺 <strong>Humulene</strong><br><br>• Smells like: Hops, beer, wood<br>• Feels like: Not hungry, relaxed<br>• Helps with: Appetite control, pain relief`,
-      "Limonene": `🍋 <strong>Limonene</strong><br><br>• Smells like: Lemon, citrus<br>• Feels like: Happy, energized<br>• Helps with: Mood, anxiety, digestion`,
-      "Linalool": `🛀 <strong>Linalool</strong><br><br>• Smells like: Lavender<br>• Feels like: Sleepy, calm<br>• Helps with: Anxiety, pain, sleep`,
-      "Ocimene": `🌬 <strong>Ocimene</strong><br><br>• Smells like: Sweet, herbal, minty<br>• Feels like: Uplifted, alert<br>• Helps with: Antiviral, antifungal`,
-      "Para Cymene": `🧂 <strong>Para Cymene</strong><br><br>• Smells like: Mild spice, citrus<br>• Feels like: Subtle relaxation<br>• Helps with: Inflammation, infection-fighting`,
-      "Terpinolene": `🪵 <strong>Terpinolene</strong><br><br>• Smells like: Mixed — pine, floral, citrus<br>• Feels like: Uplifted, creative<br>• Helps with: Antioxidant, calm but not sleepy`,
-      "Trans-Nerolidol": `🧴 <strong>Trans-Nerolidol</strong><br><br>• Smells like: Floral, apple, tea-tree oil<br>• Feels like: Sedating, chill<br>• Helps with: Skin healing, antibacterial`
+      "Alpha Pinene": 🌲 <strong>Alpha Pinene</strong><br><br>• Smells like: Pine trees<br>• Feels like: Focused, alert, awake<br>• Helps with: Memory, asthma (opens airways)<br>• Real life: Found in pine needles, rosemary,
+      "Beta Caryophyllene": 🧁 <strong>Beta Caryophyllene</strong><br><br>• Smells like: Peppery, spicy<br>• Feels like: Calm, pain relief<br>• Helps with: Anxiety, inflammation<br>• Cool fact: Binds to cannabinoid receptors,
+      "Beta Myrcene": 🛋 <strong>Beta Myrcene</strong><br><br>• Smells like: Earthy, musky, mango<br>• Feels like: Super relaxed, sleepy<br>• Helps with: Pain, insomnia<br>• High dose = couch-lock,
+      "Beta Pinene": 🌿 <strong>Beta Pinene</strong><br><br>• Smells like: Pine, herbs<br>• Feels like: Energized, clear-headed<br>• Helps with: Memory, mood, allergies,
+      "Camphene": 🔥 <strong>Camphene</strong><br><br>• Smells like: Camphor (like Vicks VapoRub)<br>• Feels like: Clean, breathing easier<br>• Helps with: Inflammation, heart health (early studies),
+      "Caryophyllene Oxide": 🌶 <strong>Caryophyllene Oxide</strong><br><br>• Smells like: Spicy, woody<br>• Feels like: Calm, anti-inflammatory<br>• Helps with: Stress, fungi<br>• Bonus: What drug-sniffing dogs smell in weed,
+      "Geraniol": 🌸 <strong>Geraniol</strong><br><br>• Smells like: Roses, sweet flowers<br>• Feels like: Uplifted, calm<br>• Helps with: Antioxidant support, possible anti-cancer benefits,
+      "Humulene": 🍺 <strong>Humulene</strong><br><br>• Smells like: Hops, beer, wood<br>• Feels like: Not hungry, relaxed<br>• Helps with: Appetite control, pain relief,
+      "Limonene": 🍋 <strong>Limonene</strong><br><br>• Smells like: Lemon, citrus<br>• Feels like: Happy, energized<br>• Helps with: Mood, anxiety, digestion,
+      "Linalool": 🛀 <strong>Linalool</strong><br><br>• Smells like: Lavender<br>• Feels like: Sleepy, calm<br>• Helps with: Anxiety, pain, sleep,
+      "Ocimene": 🌬 <strong>Ocimene</strong><br><br>• Smells like: Sweet, herbal, minty<br>• Feels like: Uplifted, alert<br>• Helps with: Antiviral, antifungal,
+      "Para Cymene": 🧂 <strong>Para Cymene</strong><br><br>• Smells like: Mild spice, citrus<br>• Feels like: Subtle relaxation<br>• Helps with: Inflammation, infection-fighting,
+      "Terpinolene": 🪵 <strong>Terpinolene</strong><br><br>• Smells like: Mixed — pine, floral, citrus<br>• Feels like: Uplifted, creative<br>• Helps with: Antioxidant, calm but not sleepy,
+      "Trans-Nerolidol": 🧴 <strong>Trans-Nerolidol</strong><br><br>• Smells like: Floral, apple, tea-tree oil<br>• Feels like: Sedating, chill<br>• Helps with: Skin healing, antibacterial
     };
   </script>
 </body>
