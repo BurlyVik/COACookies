@@ -81,6 +81,12 @@
       color: red;
       text-align: center;
     }
+    .highlight-row {
+      background-color: #d0eaff !important;
+    }
+    .highlight-col {
+      background-color: #d0eaff !important;
+    }
     @media (max-width: 768px) {
       table {
         font-size: 0.75rem;
@@ -161,7 +167,7 @@
       const table = document.createElement("table");
       const thead = table.createTHead();
       const headRow = thead.insertRow();
-      columns.forEach(col => {
+      columns.forEach((col, colIndex) => {
         const th = document.createElement("th");
         const isTerpene = terpeneDescriptions[col];
         th.innerHTML = isTerpene ? `${col}<span class="info-icon" onclick="showDescription(event, '${col}')">i</span>` : col;
@@ -170,17 +176,33 @@
       });
 
       const tbody = table.createTBody();
-      data.forEach(row => {
+      data.forEach((row, rowIndex) => {
         const tr = tbody.insertRow();
-        columns.forEach(col => {
+        columns.forEach((col, colIndex) => {
           const td = tr.insertCell();
           td.textContent = row[col] ?? "";
+          td.addEventListener("mouseenter", () => highlight(table, rowIndex + 1, colIndex));
+          td.addEventListener("mouseleave", () => clearHighlights(table));
         });
       });
 
       const container = document.getElementById("tableContainer");
       container.innerHTML = "";
       container.appendChild(table);
+    }
+
+    function highlight(table, rowIndex, colIndex) {
+      clearHighlights(table);
+      const rows = table.rows;
+      for (let i = 0; i < rows.length; i++) {
+        if (rows[i].cells[colIndex]) rows[i].cells[colIndex].classList.add("highlight-col");
+      }
+      if (rows[rowIndex]) rows[rowIndex].classList.add("highlight-row");
+    }
+
+    function clearHighlights(table) {
+      const cells = table.querySelectorAll(".highlight-col, .highlight-row");
+      cells.forEach(cell => cell.classList.remove("highlight-col", "highlight-row"));
     }
 
     function showDescription(event, col) {
