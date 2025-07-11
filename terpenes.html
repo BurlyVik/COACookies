@@ -90,20 +90,20 @@
     document.getElementById("pageTitle").textContent = `Terpenes — ${displayName}`;
 
     const terpeneDescriptions = {
-      "Alpha Pinene": "\uD83C\uDF32 Smells like pine trees. Feels focused. Helps memory, asthma.",
-      "Beta Caryophyllene": "\uD83C\uDF70 Peppery/spicy. Calms & helps anxiety. Binds to cannabinoid receptors.",
-      "Beta Myrcene": "\uD83C\uDFCB Earthy, mango scent. Very relaxing. Helps pain & insomnia.",
-      "Beta Pinene": "\uD83C\uDF3F Pine/herbs. Energizing & memory-boosting.",
-      "Camphene": "\uD83D\uDD25 Smells like Vicks. Clean feel. Helps inflammation.",
-      "Caryophyllene Oxide": "\uD83C\uDF36 Spicy. Stress relief. Dogs trained to smell it in weed!",
-      "Geraniol": "\uD83C\uDF38 Floral/rosy. Antioxidant & potential anti-cancer.",
-      "Humulene": "\uD83C\uDF7A Beer/hops. Helps suppress appetite & pain.",
-      "Limonene": "\uD83C\uDF4B Lemon scent. Uplifting. Helps anxiety & digestion.",
-      "Linalool": "\uD83D\uDEB0 Lavender scent. Very calming. Helps sleep & pain.",
-      "Ocimene": "\uD83C\uDF2C Sweet/minty. Alertness. Antiviral/antifungal.",
-      "Para Cymene": "\uD83E\uDDC2 Spicy/citrus. Relaxing. Fights infection.",
-      "Terpinolene": "\uD83E\uDE7D Mixed floral/pine. Creative energy. Antioxidant.",
-      "Trans-Nerolidol": "\uD83E\uDDF4 Tea-tree, apple. Sedative. Skin healing."
+      "Alpha Pinene": "🌲 Alpha Pinene\nSmells like: Pine trees\nFeels like: Focused, alert, awake\nHelps with: Memory, asthma (opens airways)\nReal life: Found in pine needles, rosemary",
+      "Beta Caryophyllene": "🧁 Beta Caryophyllene\nSmells like: Peppery, spicy\nFeels like: Calm, pain relief\nHelps with: Anxiety, inflammation\nCool fact: Binds to cannabinoid receptors",
+      "Beta Myrcene": "🛋 Beta Myrcene\nSmells like: Earthy, musky, mango\nFeels like: Super relaxed, sleepy\nHelps with: Pain, insomnia\nHigh dose = couch-lock",
+      "Beta Pinene": "🌿 Beta Pinene\nSmells like: Pine, herbs\nFeels like: Energized, clear-headed\nHelps with: Memory, mood, allergies",
+      "Camphene": "🔥 Camphene\nSmells like: Camphor (like Vicks VapoRub)\nFeels like: Clean, breathing easier\nHelps with: Inflammation, heart health (early studies)",
+      "Caryophyllene Oxide": "🌶 Caryophyllene Oxide\nSmells like: Spicy, woody\nFeels like: Calm, anti-inflammatory\nHelps with: Stress, fungi\nBonus: What drug-sniffing dogs smell in weed",
+      "Geraniol": "🌸 Geraniol\nSmells like: Roses, sweet flowers\nFeels like: Uplifted, calm\nHelps with: Antioxidant support, possible anti-cancer benefits",
+      "Humulene": "🍺 Humulene\nSmells like: Hops, beer, wood\nFeels like: Not hungry, relaxed\nHelps with: Appetite control, pain relief",
+      "Limonene": "🍋 Limonene\nSmells like: Lemon, citrus\nFeels like: Happy, energized\nHelps with: Mood, anxiety, digestion",
+      "Linalool": "🛀 Linalool\nSmells like: Lavender\nFeels like: Sleepy, calm\nHelps with: Anxiety, pain, sleep",
+      "Ocimene": "🌬 Ocimene\nSmells like: Sweet, herbal, minty\nFeels like: Uplifted, alert\nHelps with: Antiviral, antifungal",
+      "Para Cymene": "🧂 Para Cymene\nSmells like: Mild spice, citrus\nFeels like: Subtle relaxation\nHelps with: Inflammation, infection-fighting",
+      "Terpinolene": "🪵 Terpinolene\nSmells like: Mixed — pine, floral, citrus\nFeels like: Uplifted, creative\nHelps with: Antioxidant, calm but not sleepy",
+      "Trans-Nerolidol": "🧴 Trans-Nerolidol\nSmells like: Floral, apple, tea-tree oil\nFeels like: Sedating, chill\nHelps with: Skin healing, antibacterial"
     };
 
     const apiUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes`;
