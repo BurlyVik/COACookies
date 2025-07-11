@@ -2,20 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Live Terpene Viewer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
+      padding: 10px;
       background: #f5f5f5;
+      margin: 0;
     }
     h1 {
       text-align: center;
+      font-size: 1.5rem;
     }
     #status {
       text-align: center;
       margin-top: 10px;
       color: #666;
+      font-size: 0.9rem;
     }
     table {
       width: 100%;
@@ -23,9 +27,10 @@
       border-collapse: collapse;
       background: white;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      font-size: 0.8rem;
     }
     th, td {
-      padding: 8px;
+      padding: 6px;
       border: 1px solid #ccc;
       text-align: center;
     }
@@ -39,38 +44,43 @@
       background: #f9f9f9;
     }
     .info-icon {
-      margin-left: 6px;
-      font-size: 0.8em;
-      background: white;
-      color: #007bff;
-      border-radius: 50%;
-      padding: 0 5px;
+      font-size: 0.8rem;
+      margin-left: 5px;
       cursor: pointer;
-      display: inline-block;
-      vertical-align: middle;
+      color: #ffd700;
+      background: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      border: 1px solid #ccc;
     }
     .overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.6);
-      display: none;
+      display: flex;
       justify-content: center;
       align-items: center;
-      z-index: 1000;
-    }
-    .overlay.active {
-      display: flex;
+      z-index: 999;
     }
     .overlay-content {
       background: white;
       padding: 20px;
       border-radius: 10px;
-      max-width: 500px;
-      width: 90%;
-      color: #333;
+      max-width: 90%;
+      max-height: 80%;
+      overflow-y: auto;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      font-size: 0.9rem;
     }
-    .overlay-content h3 {
-      margin-top: 0;
+    .error {
+      color: red;
+      text-align: center;
+    }
+    @media (max-width: 600px) {
+      th, td {
+        padding: 4px;
+        font-size: 0.7rem;
+      }
     }
   </style>
 </head>
@@ -78,108 +88,14 @@
   <h1 id="pageTitle">Terpene Data</h1>
   <div id="status">Loading...</div>
   <div id="tableContainer"></div>
-
-  <div class="overlay" id="tooltipOverlay">
-    <div class="overlay-content" id="tooltipContent"></div>
+  <div id="overlay" style="display:none;" class="overlay" onclick="this.style.display='none'">
+    <div id="overlayContent" class="overlay-content"></div>
   </div>
-
   <script>
     const params = new URLSearchParams(window.location.search);
     const retailer = params.get("retailer") || "tampa";
     const displayName = retailer.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     document.getElementById("pageTitle").textContent = `Terpenes — ${displayName}`;
-
-    const terpeneDescriptions = {
-  "Alpha Pinene": `
-    🌲 <strong>Alpha Pinene</strong><br><br>
-    • Smells like: Pine trees<br>
-    • Feels like: Focused, alert, awake<br>
-    • Helps with: Memory, asthma (opens airways)<br>
-    • Real life: Found in pine needles, rosemary
-  `,
-  "Beta Caryophyllene": `
-    🧁 <strong>Beta Caryophyllene</strong><br><br>
-    • Smells like: Peppery, spicy<br>
-    • Feels like: Calm, pain relief<br>
-    • Helps with: Anxiety, inflammation<br>
-    • Cool fact: Binds to cannabinoid receptors
-  `,
-  "Beta Myrcene": `
-    🛋 <strong>Beta Myrcene</strong><br><br>
-    • Smells like: Earthy, musky, mango<br>
-    • Feels like: Super relaxed, sleepy<br>
-    • Helps with: Pain, insomnia<br>
-    • High dose = couch-lock
-  `,
-  "Beta Pinene": `
-    🌿 <strong>Beta Pinene</strong><br><br>
-    • Smells like: Pine, herbs<br>
-    • Feels like: Energized, clear-headed<br>
-    • Helps with: Memory, mood, allergies
-  `,
-  "Camphene": `
-    🔥 <strong>Camphene</strong><br><br>
-    • Smells like: Camphor (like Vicks VapoRub)<br>
-    • Feels like: Clean, breathing easier<br>
-    • Helps with: Inflammation, heart health (early studies)
-  `,
-  "Caryophyllene Oxide": `
-    🌶 <strong>Caryophyllene Oxide</strong><br><br>
-    • Smells like: Spicy, woody<br>
-    • Feels like: Calm, anti-inflammatory<br>
-    • Helps with: Stress, fungi<br>
-    • Bonus: What drug-sniffing dogs smell in weed
-  `,
-  "Geraniol": `
-    🌸 <strong>Geraniol</strong><br><br>
-    • Smells like: Roses, sweet flowers<br>
-    • Feels like: Uplifted, calm<br>
-    • Helps with: Antioxidant support, possible anti-cancer benefits
-  `,
-  "Humulene": `
-    🍺 <strong>Humulene</strong><br><br>
-    • Smells like: Hops, beer, wood<br>
-    • Feels like: Not hungry, relaxed<br>
-    • Helps with: Appetite control, pain relief
-  `,
-  "Limonene": `
-    🍋 <strong>Limonene</strong><br><br>
-    • Smells like: Lemon, citrus<br>
-    • Feels like: Happy, energized<br>
-    • Helps with: Mood, anxiety, digestion
-  `,
-  "Linalool": `
-    🛀 <strong>Linalool</strong><br><br>
-    • Smells like: Lavender<br>
-    • Feels like: Sleepy, calm<br>
-    • Helps with: Anxiety, pain, sleep
-  `,
-  "Ocimene": `
-    🌬 <strong>Ocimene</strong><br><br>
-    • Smells like: Sweet, herbal, minty<br>
-    • Feels like: Uplifted, alert<br>
-    • Helps with: Antiviral, antifungal
-  `,
-  "Para Cymene": `
-    🧂 <strong>Para Cymene</strong><br><br>
-    • Smells like: Mild spice, citrus<br>
-    • Feels like: Subtle relaxation<br>
-    • Helps with: Inflammation, infection-fighting
-  `,
-  "Terpinolene": `
-    🪵 <strong>Terpinolene</strong><br><br>
-    • Smells like: Mixed — pine, floral, citrus<br>
-    • Feels like: Uplifted, creative<br>
-    • Helps with: Antioxidant, calm but not sleepy
-  `,
-  "Trans-Nerolidol": `
-    🧴 <strong>Trans-Nerolidol</strong><br><br>
-    • Smells like: Floral, apple, tea-tree oil<br>
-    • Feels like: Sedating, chill<br>
-    • Helps with: Skin healing, antibacterial
-  `
-};
-
 
     const apiUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes`;
 
@@ -209,7 +125,10 @@
         return;
       }
 
-      const allTerpenes = [...new Set(products.flatMap(p => (p.terpenes ?? []).map(t => t.name).filter(Boolean)))].sort();
+      const allTerpenes = [...new Set(products.flatMap(p =>
+        (p.terpenes ?? []).map(t => t.name).filter(Boolean)
+      ))].sort();
+
       const columns = ["ProductName", ...allTerpenes];
       const rows = products.map(p => {
         const map = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
@@ -218,9 +137,27 @@
           ...Object.fromEntries(allTerpenes.map(t => [t, map[t] ?? ""]))
         };
       });
+
       createSortableTable(columns, rows);
       document.getElementById("status").textContent = `Loaded ${rows.length} products.`;
     }
+
+    const terpeneDescriptions = {
+      "Alpha Pinene": `🌲 <strong>Alpha Pinene</strong><br><br>• Smells like: Pine trees<br>• Feels like: Focused, alert, awake<br>• Helps with: Memory, asthma (opens airways)<br>• Real life: Found in pine needles, rosemary`,
+      "Beta Caryophyllene": `🧁 <strong>Beta Caryophyllene</strong><br><br>• Smells like: Peppery, spicy<br>• Feels like: Calm, pain relief<br>• Helps with: Anxiety, inflammation<br>• Cool fact: Binds to cannabinoid receptors`,
+      "Beta Myrcene": `🛋 <strong>Beta Myrcene</strong><br><br>• Smells like: Earthy, musky, mango<br>• Feels like: Super relaxed, sleepy<br>• Helps with: Pain, insomnia<br>• High dose = couch-lock`,
+      "Beta Pinene": `🌿 <strong>Beta Pinene</strong><br><br>• Smells like: Pine, herbs<br>• Feels like: Energized, clear-headed<br>• Helps with: Memory, mood, allergies`,
+      "Camphene": `🔥 <strong>Camphene</strong><br><br>• Smells like: Camphor (like Vicks VapoRub)<br>• Feels like: Clean, breathing easier<br>• Helps with: Inflammation, heart health (early studies)`,
+      "Caryophyllene Oxide": `🌶 <strong>Caryophyllene Oxide</strong><br><br>• Smells like: Spicy, woody<br>• Feels like: Calm, anti-inflammatory<br>• Helps with: Stress, fungi<br>• Bonus: What drug-sniffing dogs smell in weed`,
+      "Geraniol": `🌸 <strong>Geraniol</strong><br><br>• Smells like: Roses, sweet flowers<br>• Feels like: Uplifted, calm<br>• Helps with: Antioxidant support, possible anti-cancer benefits`,
+      "Humulene": `🍺 <strong>Humulene</strong><br><br>• Smells like: Hops, beer, wood<br>• Feels like: Not hungry, relaxed<br>• Helps with: Appetite control, pain relief`,
+      "Limonene": `🍋 <strong>Limonene</strong><br><br>• Smells like: Lemon, citrus<br>• Feels like: Happy, energized<br>• Helps with: Mood, anxiety, digestion`,
+      "Linalool": `🛀 <strong>Linalool</strong><br><br>• Smells like: Lavender<br>• Feels like: Sleepy, calm<br>• Helps with: Anxiety, pain, sleep`,
+      "Ocimene": `🌬 <strong>Ocimene</strong><br><br>• Smells like: Sweet, herbal, minty<br>• Feels like: Uplifted, alert<br>• Helps with: Antiviral, antifungal`,
+      "Para Cymene": `🧂 <strong>Para Cymene</strong><br><br>• Smells like: Mild spice, citrus<br>• Feels like: Subtle relaxation<br>• Helps with: Inflammation, infection-fighting`,
+      "Terpinolene": `🪵 <strong>Terpinolene</strong><br><br>• Smells like: Mixed — pine, floral, citrus<br>• Feels like: Uplifted, creative<br>• Helps with: Antioxidant, calm but not sleepy`,
+      "Trans-Nerolidol": `🧴 <strong>Trans-Nerolidol</strong><br><br>• Smells like: Floral, apple, tea-tree oil<br>• Feels like: Sedating, chill<br>• Helps with: Skin healing, antibacterial`
+    };
 
     function createSortableTable(columns, data) {
       const table = document.createElement("table");
@@ -228,20 +165,11 @@
       const headRow = thead.insertRow();
       columns.forEach(col => {
         const th = document.createElement("th");
-        th.textContent = col;
-
-        if (terpeneDescriptions[col]) {
-          const info = document.createElement("span");
-          info.className = "info-icon";
-          info.textContent = "i";
-          info.addEventListener("click", (e) => {
-            e.stopPropagation();
-            showTooltip(col);
-          });
-          th.appendChild(info);
+        const isTerpene = terpeneDescriptions[col];
+        th.innerHTML = isTerpene ? `${col}<span class="info-icon" onclick="showDescription(event, '${col}')">i</span>` : col;
+        if (!isTerpene) {
+          th.addEventListener("click", () => sortBy(col, data));
         }
-
-        th.addEventListener("click", () => sortBy(col, data));
         headRow.appendChild(th);
       });
 
@@ -259,6 +187,13 @@
       container.appendChild(table);
     }
 
+    function showDescription(event, col) {
+      event.stopPropagation();
+      const content = document.getElementById("overlayContent");
+      content.innerHTML = terpeneDescriptions[col] || "No description.";
+      document.getElementById("overlay").style.display = "flex";
+    }
+
     function sortBy(col, data) {
       const isNumeric = data.every(row => !isNaN(parseFloat(row[col])) || row[col] === "");
       const sorted = [...data].sort((a, b) => {
@@ -268,17 +203,6 @@
       });
       createSortableTable(Object.keys(sorted[0]), sorted);
     }
-
-    function showTooltip(col) {
-      const overlay = document.getElementById("tooltipOverlay");
-      const content = document.getElementById("tooltipContent");
-      content.innerHTML = `<h3>${col}</h3><p>${terpeneDescriptions[col]}</p>`;
-      overlay.classList.add("active");
-    }
-
-    document.getElementById("tooltipOverlay").addEventListener("click", () => {
-      document.getElementById("tooltipOverlay").classList.remove("active");
-    });
   </script>
 </body>
 </html>
