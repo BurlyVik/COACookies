@@ -157,23 +157,6 @@
       document.getElementById("status").textContent = `Loaded ${rows.length} products.`;
     }
 
-    const terpeneDescriptions = {
-      "Alpha Pinene": `🌲 <strong>Alpha Pinene</strong><br><br>• Smells like: Pine trees<br>• Feels like: Focused, alert, awake<br>• Helps with: Memory, asthma (opens airways)<br>• Real life: Found in pine needles, rosemary`,
-      "Beta Caryophyllene": `🧁 <strong>Beta Caryophyllene</strong><br><br>• Smells like: Peppery, spicy<br>• Feels like: Calm, pain relief<br>• Helps with: Anxiety, inflammation<br>• Cool fact: Binds to cannabinoid receptors`,
-      "Beta Myrcene": `🛋 <strong>Beta Myrcene</strong><br><br>• Smells like: Earthy, musky, mango<br>• Feels like: Super relaxed, sleepy<br>• Helps with: Pain, insomnia<br>• High dose = couch-lock`,
-      "Beta Pinene": `🌿 <strong>Beta Pinene</strong><br><br>• Smells like: Pine, herbs<br>• Feels like: Energized, clear-headed<br>• Helps with: Memory, mood, allergies`,
-      "Camphene": `🔥 <strong>Camphene</strong><br><br>• Smells like: Camphor (like Vicks VapoRub)<br>• Feels like: Clean, breathing easier<br>• Helps with: Inflammation, heart health (early studies)`,
-      "Caryophyllene Oxide": `🌶 <strong>Caryophyllene Oxide</strong><br><br>• Smells like: Spicy, woody<br>• Feels like: Calm, anti-inflammatory<br>• Helps with: Stress, fungi<br>• Bonus: What drug-sniffing dogs smell in weed`,
-      "Geraniol": `🌸 <strong>Geraniol</strong><br><br>• Smells like: Roses, sweet flowers<br>• Feels like: Uplifted, calm<br>• Helps with: Antioxidant support, possible anti-cancer benefits`,
-      "Humulene": `🍺 <strong>Humulene</strong><br><br>• Smells like: Hops, beer, wood<br>• Feels like: Not hungry, relaxed<br>• Helps with: Appetite control, pain relief`,
-      "Limonene": `🍋 <strong>Limonene</strong><br><br>• Smells like: Lemon, citrus<br>• Feels like: Happy, energized<br>• Helps with: Mood, anxiety, digestion`,
-      "Linalool": `🛀 <strong>Linalool</strong><br><br>• Smells like: Lavender<br>• Feels like: Sleepy, calm<br>• Helps with: Anxiety, pain, sleep`,
-      "Ocimene": `🌬 <strong>Ocimene</strong><br><br>• Smells like: Sweet, herbal, minty<br>• Feels like: Uplifted, alert<br>• Helps with: Antiviral, antifungal`,
-      "Para Cymene": `🧂 <strong>Para Cymene</strong><br><br>• Smells like: Mild spice, citrus<br>• Feels like: Subtle relaxation<br>• Helps with: Inflammation, infection-fighting`,
-      "Terpinolene": `🪵 <strong>Terpinolene</strong><br><br>• Smells like: Mixed — pine, floral, citrus<br>• Feels like: Uplifted, creative<br>• Helps with: Antioxidant, calm but not sleepy`,
-      "Trans-Nerolidol": `🧴 <strong>Trans-Nerolidol</strong><br><br>• Smells like: Floral, apple, tea-tree oil<br>• Feels like: Sedating, chill<br>• Helps with: Skin healing, antibacterial`
-    };
-
     function createSortableTable(columns, data) {
       const table = document.createElement("table");
       const thead = table.createTHead();
@@ -182,9 +165,7 @@
         const th = document.createElement("th");
         const isTerpene = terpeneDescriptions[col];
         th.innerHTML = isTerpene ? `${col}<span class="info-icon" onclick="showDescription(event, '${col}')">i</span>` : col;
-        if (!isTerpene) {
-          th.addEventListener("click", () => sortBy(col, data));
-        }
+        th.addEventListener("click", () => sortBy(col, data));
         headRow.appendChild(th);
       });
 
@@ -218,6 +199,23 @@
       });
       createSortableTable(Object.keys(sorted[0]), sorted);
     }
+
+    const terpeneDescriptions = {
+      "Alpha Pinene": `🌲 <strong>Alpha Pinene</strong><br><br>• Smells like: Pine trees<br>• Feels like: Focused, alert, awake<br>• Helps with: Memory, asthma (opens airways)<br>• Real life: Found in pine needles, rosemary`,
+      "Beta Caryophyllene": `🧁 <strong>Beta Caryophyllene</strong><br><br>• Smells like: Peppery, spicy<br>• Feels like: Calm, pain relief<br>• Helps with: Anxiety, inflammation<br>• Cool fact: Binds to cannabinoid receptors`,
+      "Beta Myrcene": `🛋 <strong>Beta Myrcene</strong><br><br>• Smells like: Earthy, musky, mango<br>• Feels like: Super relaxed, sleepy<br>• Helps with: Pain, insomnia<br>• High dose = couch-lock`,
+      "Beta Pinene": `🌿 <strong>Beta Pinene</strong><br><br>• Smells like: Pine, herbs<br>• Feels like: Energized, clear-headed<br>• Helps with: Memory, mood, allergies`,
+      "Camphene": `🔥 <strong>Camphene</strong><br><br>• Smells like: Camphor (like Vicks VapoRub)<br>• Feels like: Clean, breathing easier<br>• Helps with: Inflammation, heart health (early studies)`,
+      "Caryophyllene Oxide": `🌶 <strong>Caryophyllene Oxide</strong><br><br>• Smells like: Spicy, woody<br>• Feels like: Calm, anti-inflammatory<br>• Helps with: Stress, fungi<br>• Bonus: What drug-sniffing dogs smell in weed`,
+      "Geraniol": `🌸 <strong>Geraniol</strong><br><br>• Smells like: Roses, sweet flowers<br>• Feels like: Uplifted, calm<br>• Helps with: Antioxidant support, possible anti-cancer benefits`,
+      "Humulene": `🍺 <strong>Humulene</strong><br><br>• Smells like: Hops, beer, wood<br>• Feels like: Not hungry, relaxed<br>• Helps with: Appetite control, pain relief`,
+      "Limonene": `🍋 <strong>Limonene</strong><br><br>• Smells like: Lemon, citrus<br>• Feels like: Happy, energized<br>• Helps with: Mood, anxiety, digestion`,
+      "Linalool": `🛀 <strong>Linalool</strong><br><br>• Smells like: Lavender<br>• Feels like: Sleepy, calm<br>• Helps with: Anxiety, pain, sleep`,
+      "Ocimene": `🌬 <strong>Ocimene</strong><br><br>• Smells like: Sweet, herbal, minty<br>• Feels like: Uplifted, alert<br>• Helps with: Antiviral, antifungal`,
+      "Para Cymene": `🧂 <strong>Para Cymene</strong><br><br>• Smells like: Mild spice, citrus<br>• Feels like: Subtle relaxation<br>• Helps with: Inflammation, infection-fighting`,
+      "Terpinolene": `🪵 <strong>Terpinolene</strong><br><br>• Smells like: Mixed — pine, floral, citrus<br>• Feels like: Uplifted, creative<br>• Helps with: Antioxidant, calm but not sleepy`,
+      "Trans-Nerolidol": `🧴 <strong>Trans-Nerolidol</strong><br><br>• Smells like: Floral, apple, tea-tree oil<br>• Feels like: Sedating, chill<br>• Helps with: Skin healing, antibacterial`
+    };
   </script>
 </body>
 </html>
