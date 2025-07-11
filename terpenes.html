@@ -89,6 +89,7 @@
     }
     td.highlight-cell {
       background-color: #ffffff !important;
+      border: 1px solid black !important;
     }
     a.product-link {
       color: #007bff;
@@ -162,7 +163,7 @@
       const rows = products.map(p => {
         const map = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
         return {
-          ProductName: { text: p.name, url: p.permalink },
+          ProductName: { text: p.name, url: p.permalink ?? p.link ?? null },
           Delivery: p.subcategory || "",
           ...Object.fromEntries(allTerpenes.map(t => [t, map[t] ?? ""]))
         };
