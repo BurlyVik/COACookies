@@ -235,8 +235,8 @@
   const rows = table.rows;
 
   // Only apply column highlight if it's not the first column (Image)
-  if (colIndex !== 1) {
-    for (let i = 2; i < rows.length; i++) {
+  if (colIndex !== 1 && colIndex !== 0) {
+    for (let i = 1; i < rows.length; i++) {
       if (rows[i].cells[colIndex]) rows[i].cells[colIndex].classList.add("highlight-col");
     }
   }
