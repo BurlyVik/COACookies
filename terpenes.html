@@ -163,11 +163,9 @@
       fetch(concUrl).then(r => r.text())
     ]).then(([vapeData, concData]) => {
       updateProgress(40);
-      const allData = [vapeData, concData]
-        .map(fixMalformedJson)
-        .flatMap(raw => JSON.parse(raw))
-        .flatMap(p => p.results ?? []);
-
+      const parsedVape = fixMalformedJson(vapeData);
+      const parsedConc = fixMalformedJson(concData);
+      const allData = [...parsedVape, ...parsedConc].flatMap(p => p.results ?? []);
       updateProgress(80);
       renderTerpeneTable(allData);
       updateProgress(100);
