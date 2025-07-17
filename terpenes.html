@@ -231,19 +231,24 @@
     }
 
     function highlight(table, rowIndex, colIndex) {
-      clearHighlights(table);
-      const rows = table.rows;
-      for (let i = 1; i < rows.length; i++) {
-        if (rows[i].cells[colIndex]) rows[i].cells[colIndex].classList.add("highlight-col");
-      }
-      
-      if (rows[rowIndex]) {
-        [...rows[rowIndex].cells].forEach((cell, i) => {
-          cell.classList.add("highlight-row");
-          if (i === colIndex) cell.classList.add("highlight-cell");
-        });
-      }
+  clearHighlights(table);
+  const rows = table.rows;
+
+  // Only apply column highlight if it's not the first column (Image)
+  if (colIndex !== 0) {
+    for (let i = 1; i < rows.length; i++) {
+      if (rows[i].cells[colIndex]) rows[i].cells[colIndex].classList.add("highlight-col");
     }
+  }
+
+  if (rows[rowIndex]) {
+    [...rows[rowIndex].cells].forEach((cell, i) => {
+      // Always allow row highlight including the first cell
+      cell.classList.add("highlight-row");
+      if (i === colIndex) cell.classList.add("highlight-cell");
+    });
+  }
+}
 
     function clearHighlights(table) {
       const cells = table.querySelectorAll(".highlight-col, .highlight-row, .highlight-cell");
