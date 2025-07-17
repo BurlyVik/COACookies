@@ -140,7 +140,7 @@
   <div id="status">Loading...</div>
   <div id="progressBarContainer"><div id="progressBar"></div></div>
   <div id="tableContainer"></div>
-  <div id="overlay" class="overlay" onclick="if(event.target.id==='overlay'){ this.style.display='none'; }">
+  <div id="overlay" class="overlay" onclick="this.style.display='none'">
     <div id="overlayContent" class="overlay-content"></div>
   </div>
   <script>
@@ -257,7 +257,7 @@
         return isNumeric ? bv - av : av.localeCompare(bv);
       });
       createSortableTable(Object.keys(sorted[0]), sorted);
-    }  
+    }
 
     const terpeneDescriptions = {
       "Alpha Pinene": `🌲 <strong>Alpha Pinene</strong><br><br>• Smells like: Pine trees<br>• Feels like: Focused, alert, awake<br>• Helps with: Memory, asthma (opens airways)<br>• Real life: Found in pine needles, rosemary`,
