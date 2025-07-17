@@ -61,15 +61,20 @@
       background: #f9f9f9;
     }
     .info-icon {
-      font-size: 0.8rem;
-      margin-left: 5px;
+      font-size: 0.75rem;
+      margin-left: 6px;
       cursor: pointer;
-      color: #ffd700;
-      background: white;
+      color: white;
+      background: #007bff;
       border-radius: 50%;
-      padding: 2px 6px;
-      border: 1px solid #ccc;
+      padding: 4px 6px;
+      border: 1px solid white;
       display: inline-block;
+      width: 18px;
+      height: 18px;
+      text-align: center;
+      line-height: 1;
+      font-weight: bold;
     }
     .overlay {
       position: fixed;
@@ -117,22 +122,6 @@
       max-height: 60px;
       object-fit: contain;
     }
-    @media (max-width: 768px) {
-      table {
-        font-size: 0.75rem;
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-      }
-      .overlay-content {
-        font-size: 0.85rem;
-        padding: 15px;
-        width: 90%;
-      }
-      .info-icon {
-        padding: 5px 5px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -144,128 +133,26 @@
     <div id="overlayContent" class="overlay-content"></div>
   </div>
   <script>
-    const progressBar = document.getElementById("progressBar");
-    function updateProgress(percent) {
-      progressBar.style.width = percent + "%";
-    }
-    updateProgress(5);
-
-    const params = new URLSearchParams(window.location.search);
-    const retailer = params.get("retailer") || "tampa";
-    const displayName = retailer.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    document.getElementById("pageTitle").textContent = `Terpenes — ${displayName}`;
-
-    const vapeUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes`;
-    const concUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=concentrates`;
-
-    Promise.all([
-      fetch(vapeUrl).then(r => r.text()),
-      fetch(concUrl).then(r => r.text())
-    ]).then(([vapeData, concData]) => {
-      updateProgress(40);
-      const parsedVape = fixMalformedJson(vapeData);
-      const parsedConc = fixMalformedJson(concData);
-      const allData = [...parsedVape, ...parsedConc].flatMap(p => p.results ?? []);
-      updateProgress(80);
-      renderTerpeneTable(allData);
-      updateProgress(100);
-    }).catch(err => {
-      document.getElementById("status").innerHTML = `<p class="error">Failed to load data for <strong>${displayName}</strong>.</p>`;
-      console.error(err);
-    });
-
-    function fixMalformedJson(raw) {
-      const trimmed = raw.trim();
-      const needsStart = !trimmed.startsWith("[");
-      const needsEnd = !trimmed.endsWith("]");
-      return JSON.parse(`${needsStart ? "[" : ""}${trimmed}${needsEnd ? "]" : ""}`);
-    }
-
-    function renderTerpeneTable(products) {
-      const allTerpenes = [...new Set(products.flatMap(p => (p.terpenes ?? []).map(t => t.name).filter(Boolean)))].sort();
-      const columns = ["Image", "ProductName", "Delivery", ...allTerpenes];
-      const rows = products.map(p => {
-        const terpMap = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
-        return {
-          Image: p.images?.[0]?.url || "",
-          ProductName: { text: p.name, url: p.permalink || p.link || "" },
-          Delivery: p.subcategory || "",
-          ...Object.fromEntries(allTerpenes.map(t => [t, terpMap[t] ?? ""]))
-        };
-      });
-      createSortableTable(columns, rows);
-      document.getElementById("status").textContent = `Loaded ${rows.length} products.`;
-    }
-
-    function createSortableTable(columns, data) {
-      const table = document.createElement("table");
-      const thead = table.createTHead();
-      const headRow = thead.insertRow();
-      columns.forEach(col => {
-        const th = document.createElement("th");
-        th.textContent = col;
-        th.addEventListener("click", () => sortBy(col, data));
-        headRow.appendChild(th);
-      });
-
-      const tbody = table.createTBody();
-      data.forEach((row, rowIndex) => {
-        const tr = tbody.insertRow();
-        columns.forEach((col, colIndex) => {
-          const td = tr.insertCell();
-          if (col === "ProductName" && row[col]?.url) {
-            td.innerHTML = `<a class="product-link" href="${row[col].url}" target="_blank">${row[col].text}</a>`;
-          } else if (col === "Image" && row[col]) {
-            td.innerHTML = `<img class="product-img" src="${row[col]}" alt="Image" />`;
-          } else {
-            td.textContent = row[col]?.text || row[col] || "";
-          }
-          td.addEventListener("mouseenter", () => highlight(table, rowIndex + 1, colIndex));
-          td.addEventListener("mouseleave", () => clearHighlights(table));
-        });
-      });
-
-      const container = document.getElementById("tableContainer");
-      container.innerHTML = "";
-      container.appendChild(table);
-    }
-
     function highlight(table, rowIndex, colIndex) {
       clearHighlights(table);
       const rows = table.rows;
-      for (let i = 1; i < rows.length; i++) {
-        if (rows[i].cells[colIndex]) rows[i].cells[colIndex].classList.add("highlight-col");
+
+      // Only apply column highlight if it's not the first column (Image or ProductName)
+      if (colIndex !== 0 && colIndex !== 1) {
+        for (let i = 1; i < rows.length; i++) {
+          if (rows[i].cells[colIndex]) rows[i].cells[colIndex].classList.add("highlight-col");
+        }
       }
+
       if (rows[rowIndex]) {
         [...rows[rowIndex].cells].forEach((cell, i) => {
+          // Always apply row highlight including the first cell
           cell.classList.add("highlight-row");
           if (i === colIndex) cell.classList.add("highlight-cell");
         });
       }
     }
-
-    function clearHighlights(table) {
-      const cells = table.querySelectorAll(".highlight-col, .highlight-row, .highlight-cell");
-      cells.forEach(cell => cell.classList.remove("highlight-col", "highlight-row", "highlight-cell"));
-    }
-
-    function sortBy(col, data) {
-      const isNumeric = data.every(row => !isNaN(parseFloat(row[col])) || row[col] === "");
-      const sorted = [...data].sort((a, b) => {
-        const av = isNumeric ? parseFloat(a[col]) || 0 : (a[col]?.text || a[col] || "").toLowerCase();
-        const bv = isNumeric ? parseFloat(b[col]) || 0 : (b[col]?.text || b[col] || "").toLowerCase();
-        return isNumeric ? bv - av : av.localeCompare(bv);
-      });
-      createSortableTable(Object.keys(sorted[0]), sorted);
-    }
-
-    function showDescription(event, col) {
-      event.stopPropagation();
-      const content = document.getElementById("overlayContent");
-      content.innerHTML = terpeneDescriptions[col] || "No description.";
-      document.getElementById("overlay").style.display = "flex";
-    }
-
+  
     const terpeneDescriptions = {
       "Alpha Pinene": `🌲 <strong>Alpha Pinene</strong><br><br>• Smells like: Pine trees<br>• Feels like: Focused, alert, awake<br>• Helps with: Memory, asthma (opens airways)<br>• Real life: Found in pine needles, rosemary`,
       "Beta Caryophyllene": `🧁 <strong>Beta Caryophyllene</strong><br><br>• Smells like: Peppery, spicy<br>• Feels like: Calm, pain relief<br>• Helps with: Anxiety, inflammation<br>• Cool fact: Binds to cannabinoid receptors`,
