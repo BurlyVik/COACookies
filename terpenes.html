@@ -243,6 +243,15 @@
 
   if (rows[rowIndex]) {
     [...rows[rowIndex].cells].forEach((cell, i) => {
+      // Always apply row highlight including the first cell
+      cell.classList.add("highlight-row");
+      if (i === colIndex) cell.classList.add("highlight-cell");
+    });
+  }
+}
+
+  if (rows[rowIndex]) {
+    [...rows[rowIndex].cells].forEach((cell, i) => {
       // Always allow row highlight including the first cell
       cell.classList.add("highlight-row");
       if (i === colIndex) cell.classList.add("highlight-cell");
