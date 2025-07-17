@@ -155,40 +155,37 @@
     const displayName = retailer.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     document.getElementById("pageTitle").textContent = `Terpenes — ${displayName}`;
 
-    const apiUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes`;
+    const vapeUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes`;
+    const concUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=concentrates`;
 
-    updateProgress(20);
-    fetch(apiUrl)
-      .then(res => {
-        updateProgress(40);
-        return res.text();
-      })
-      .then(data => {
-        updateProgress(60);
-        const fixedJson = fixMalformedJson(data);
-        const parsed = JSON.parse(fixedJson);
-        const products = parsed.flatMap(p => p.results ?? []);
-        updateProgress(85);
-        renderTerpeneTable(products);
-        updateProgress(100);
-      })
-      .catch(err => {
-        document.getElementById("status").innerHTML = `<p class="error">Failed to load data for <strong>${displayName}</strong>.</p>`;
-        console.error(err);
-      });
+    Promise.all([
+      fetch(vapeUrl).then(r => r.text()),
+      fetch(concUrl).then(r => r.text())
+    ]).then(([vapeData, concData]) => {
+      updateProgress(40);
+      const allData = [vapeData, concData]
+        .map(fixMalformedJson)
+        .flatMap(raw => JSON.parse(raw))
+        .flatMap(p => p.results ?? []);
+
+      updateProgress(80);
+      renderTerpeneTable(allData);
+      updateProgress(100);
+    }).catch(err => {
+      document.getElementById("status").innerHTML = `<p class="error">Failed to load data for <strong>${displayName}</strong>.</p>`;
+      console.error(err);
+    });
 
     function fixMalformedJson(raw) {
       const trimmed = raw.trim();
       const needsStart = !trimmed.startsWith("[");
       const needsEnd = !trimmed.endsWith("]");
-      return `${needsStart ? "[" : ""}${trimmed}${needsEnd ? "]" : ""}`;
+      return JSON.parse(`${needsStart ? "[" : ""}${trimmed}${needsEnd ? "]" : ""}`);
     }
 
     function renderTerpeneTable(products) {
-      // Define columns
       const allTerpenes = [...new Set(products.flatMap(p => (p.terpenes ?? []).map(t => t.name).filter(Boolean)))].sort();
       const columns = ["Image", "ProductName", "Delivery", ...allTerpenes];
-
       const rows = products.map(p => {
         const terpMap = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
         return {
@@ -198,7 +195,6 @@
           ...Object.fromEntries(allTerpenes.map(t => [t, terpMap[t] ?? ""]))
         };
       });
-
       createSortableTable(columns, rows);
       document.getElementById("status").textContent = `Loaded ${rows.length} products.`;
     }
