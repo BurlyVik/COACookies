@@ -90,7 +90,7 @@
       overflow-y: auto;
       box-shadow: 0 0 20px rgba(0,0,0,0.3);
       font-size: 0.9rem;
-      text-align: center;
+      text-align: left;
     }
     .error {
       color: red;
@@ -140,7 +140,7 @@
   <div id="status">Loading...</div>
   <div id="progressBarContainer"><div id="progressBar"></div></div>
   <div id="tableContainer"></div>
-  <div id="overlay" class="overlay" onclick="if(event.target.id==='overlay'){ this.style.display='none'; }">
+  <div id="overlay" class="overlay" onclick="this.style.display='none'">
     <div id="overlayContent" class="overlay-content"></div>
   </div>
   <script>
