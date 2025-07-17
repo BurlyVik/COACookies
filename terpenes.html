@@ -202,11 +202,14 @@
       const thead = table.createTHead();
       const headRow = thead.insertRow();
       columns.forEach(col => {
-        const th = document.createElement("th");
-        th.textContent = col;
-        th.addEventListener("click", () => sortBy(col, data));
-        headRow.appendChild(th);
-      });
+  const th = document.createElement("th");
+  const isTerpene = terpeneDescriptions[col];
+  th.innerHTML = isTerpene
+    ? `${col}<span class="info-icon" onclick="showDescription(event, '${col}')">i</span>`
+    : col;
+  th.addEventListener("click", () => sortBy(col, data));
+  headRow.appendChild(th);
+});
 
       const tbody = table.createTBody();
       data.forEach((row, rowIndex) => {
