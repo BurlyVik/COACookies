@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,16 +12,19 @@
       background: #f5f5f5;
       margin: 0;
     }
+
     h1 {
       text-align: center;
       font-size: 1.5rem;
     }
+
     #status {
       text-align: center;
       margin-top: 10px;
       color: #666;
       font-size: 0.9rem;
     }
+
     #progressBarContainer {
       width: 100%;
       background: #ddd;
@@ -30,62 +34,69 @@
       max-width: 400px;
       overflow: hidden;
     }
+
     #progressBar {
       width: 0%;
       height: 100%;
       background: #007bff;
       transition: width 0.3s ease;
     }
+
     table {
       width: 100%;
       margin-top: 20px;
       border-collapse: collapse;
       background: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       font-size: 0.8rem;
       table-layout: fixed;
       word-wrap: break-word;
     }
-    th, td {
+
+    th,
+    td {
       padding: 6px;
       border: 1px solid #ccc;
       text-align: center;
     }
+
     th {
       background: #007bff;
       color: white;
       cursor: pointer;
       position: relative;
     }
+
     tr:nth-child(even) {
       background: #f9f9f9;
     }
+
     .info-icon {
-      font-size: 0.75rem;
-      margin-left: 6px;
+      font-size: 0.8rem;
+      margin-left: 5px;
       cursor: pointer;
-      color: white;
-      background: #007bff;
+      color: #ffd700;
+      background: white;
       border-radius: 50%;
-      padding: 4px 6px;
-      border: 1px solid white;
+      padding: 2px 6px;
+      border: 1px solid #ccc;
       display: inline-block;
-      width: 18px;
-      height: 18px;
-      text-align: center;
-      line-height: 1;
-      font-weight: bold;
     }
+
     .overlay {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.6);
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
       display: none;
       justify-content: center;
       align-items: center;
       z-index: 999;
       padding: 10px;
     }
+
     .overlay-content {
       background: white;
       padding: 20px;
@@ -93,91 +104,125 @@
       max-width: 90%;
       max-height: 80%;
       overflow-y: auto;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
       font-size: 0.9rem;
       text-align: left;
     }
+
     .error {
       color: red;
       text-align: center;
     }
+
     td.highlight-row {
       background-color: #b8ffc9 !important;
     }
+
     td.highlight-col {
       background-color: #d7b6e0 !important;
     }
+
     td.highlight-cell {
       background-color: #ffffff !important;
     }
+
     a.product-link {
       color: #007bff;
       text-decoration: none;
     }
+
     a.product-link:hover {
       text-decoration: underline;
     }
+
     img.product-img {
       max-width: 60px;
       max-height: 60px;
       object-fit: contain;
     }
+
+    @media (max-width: 768px) {
+      table {
+        font-size: 0.75rem;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+
+      .overlay-content {
+        font-size: 0.85rem;
+        padding: 15px;
+        width: 90%;
+      }
+
+      .info-icon {
+        padding: 2px 5px;
+      }
+    }
   </style>
 </head>
+
 <body>
   <h1 id="pageTitle">Terpene Data</h1>
   <div id="status">Loading...</div>
-  <div id="progressBarContainer"><div id="progressBar"></div></div>
+  <div id="progressBarContainer">
+    <div id="progressBar"></div>
+  </div>
   <div id="tableContainer"></div>
-  <div id="overlay" class="overlay" onclick="this.style.display='none'">
+  <div id="overlay" class="overlay" onclick="if(event.target.id==='overlay'){ this.style.display='none'; }">
     <div id="overlayContent" class="overlay-content"></div>
   </div>
+  </div>
   <script>
+    const progressBar = document.getElementById("progressBar");
+    function updateProgress(percent) {
+      progressBar.style.width = percent + "%";
+    }
+    updateProgress(5);
+
     const params = new URLSearchParams(window.location.search);
     const retailer = params.get("retailer") || "tampa";
     const displayName = retailer.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     document.getElementById("pageTitle").textContent = `Terpenes — ${displayName}`;
 
-    const apiUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes`;
+    const vapeUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes`;
+    const concUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=concentrates`;
 
-    fetch(apiUrl)
-      .then(res => res.text())
-      .then(data => {
-        const fixedJson = fixMalformedJson(data);
-        const parsed = JSON.parse(fixedJson);
-        const products = parsed.flatMap(p => p.results ?? []);
-        renderTerpeneTable(products);
-      })
-      .catch(err => {
-        document.getElementById("status").innerHTML = `<p class="error">Failed to load data for <strong>${displayName}</strong>.</p>`;
-        console.error(err);
-      });
+    Promise.all([
+      fetch(vapeUrl).then(r => r.text()),
+      fetch(concUrl).then(r => r.text())
+    ]).then(([vapeData, concData]) => {
+      updateProgress(40);
+      const parsedVape = fixMalformedJson(vapeData);
+      const parsedConc = fixMalformedJson(concData);
+      const allData = [...parsedVape, ...parsedConc].flatMap(p => p.results ?? []);
+      updateProgress(80);
+      renderTerpeneTable(allData);
+      updateProgress(100);
+    }).catch(err => {
+      document.getElementById("status").innerHTML = `<p class="error">Failed to load data for <strong>${displayName}</strong>.</p>`;
+      console.error(err);
+    });
 
     function fixMalformedJson(raw) {
       const trimmed = raw.trim();
       const needsStart = !trimmed.startsWith("[");
       const needsEnd = !trimmed.endsWith("]");
-      return `${needsStart ? "[" : ""}${trimmed}${needsEnd ? "]" : ""}`;
+      return JSON.parse(`${needsStart ? "[" : ""}${trimmed}${needsEnd ? "]" : ""}`);
     }
 
     function renderTerpeneTable(products) {
-      if (!products.length) {
-        document.getElementById("status").textContent = "No products found.";
-        return;
-      }
-
       const allTerpenes = [...new Set(products.flatMap(p => (p.terpenes ?? []).map(t => t.name).filter(Boolean)))].sort();
-
-      const columns = ["ProductName", "Delivery", ...allTerpenes];
+      const columns = ["Image", "ProductName", "Delivery", ...allTerpenes];
       const rows = products.map(p => {
-        const map = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
+        const terpMap = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
         return {
-          ProductName: { text: p.name, url: p.permalink ?? p.link ?? null },
+          Image: p.images?.[0]?.url || "",
+          ProductName: { text: p.name, url: p.permalink || p.link || "" },
           Delivery: p.subcategory || "",
-          ...Object.fromEntries(allTerpenes.map(t => [t, map[t] ?? ""]))
+          ...Object.fromEntries(allTerpenes.map(t => [t, terpMap[t] ?? ""]))
         };
       });
-
       createSortableTable(columns, rows);
       document.getElementById("status").textContent = `Loaded ${rows.length} products.`;
     }
@@ -190,6 +235,7 @@
         const th = document.createElement("th");
         const isTerpene = terpeneDescriptions[col];
         th.innerHTML = isTerpene ? `${col}<span class="info-icon" onclick="showDescription(event, '${col}')">i</span>` : col;
+
         th.addEventListener("click", () => sortBy(col, data));
         headRow.appendChild(th);
       });
@@ -201,6 +247,8 @@
           const td = tr.insertCell();
           if (col === "ProductName" && row[col]?.url) {
             td.innerHTML = `<a class="product-link" href="${row[col].url}" target="_blank">${row[col].text}</a>`;
+          } else if (col === "Image" && row[col]) {
+            td.innerHTML = `<img class="product-img" src="${row[col]}" alt="Image" />`;
           } else {
             td.textContent = row[col]?.text || row[col] || "";
           }
@@ -217,11 +265,17 @@
     function highlight(table, rowIndex, colIndex) {
       clearHighlights(table);
       const rows = table.rows;
-      for (let i = 1; i < rows.length; i++) {
-        if (rows[i].cells[colIndex]) rows[i].cells[colIndex].classList.add("highlight-col");
+
+      // Only apply column highlight if it's not the first column (Image or ProductName)
+      if (colIndex !== 0) {
+        for (let i = 1; i < rows.length; i++) {
+          if (rows[i].cells[colIndex]) rows[i].cells[colIndex].classList.add("highlight-col");
+        }
       }
+
       if (rows[rowIndex]) {
         [...rows[rowIndex].cells].forEach((cell, i) => {
+          // Always apply row highlight including the first cell
           cell.classList.add("highlight-row");
           if (i === colIndex) cell.classList.add("highlight-cell");
         });
@@ -233,13 +287,6 @@
       cells.forEach(cell => cell.classList.remove("highlight-col", "highlight-row", "highlight-cell"));
     }
 
-    function showDescription(event, col) {
-      event.stopPropagation();
-      const content = document.getElementById("overlayContent");
-      content.innerHTML = terpeneDescriptions[col] || "No description.";
-      document.getElementById("overlay").style.display = "flex";
-    }
-
     function sortBy(col, data) {
       const isNumeric = data.every(row => !isNaN(parseFloat(row[col])) || row[col] === "");
       const sorted = [...data].sort((a, b) => {
@@ -248,6 +295,13 @@
         return isNumeric ? bv - av : av.localeCompare(bv);
       });
       createSortableTable(Object.keys(sorted[0]), sorted);
+    }
+
+    function showDescription(event, col) {
+      event.stopPropagation();
+      const content = document.getElementById("overlayContent");
+      content.innerHTML = terpeneDescriptions[col] || "No description.";
+      document.getElementById("overlay").style.display = "flex";
     }
 
     const terpeneDescriptions = {
@@ -268,4 +322,5 @@
     };
   </script>
 </body>
+
 </html>
