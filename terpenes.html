@@ -236,6 +236,7 @@
       for (let i = 1; i < rows.length; i++) {
         if (rows[i].cells[colIndex]) rows[i].cells[colIndex].classList.add("highlight-col");
       }
+      
       if (rows[rowIndex]) {
         [...rows[rowIndex].cells].forEach((cell, i) => {
           cell.classList.add("highlight-row");
