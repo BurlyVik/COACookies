@@ -21,6 +21,21 @@
       color: #666;
       font-size: 0.9rem;
     }
+    #progressBarContainer {
+      width: 100%;
+      background: #ddd;
+      border-radius: 5px;
+      height: 10px;
+      margin: 10px auto;
+      max-width: 400px;
+      overflow: hidden;
+    }
+    #progressBar {
+      width: 0%;
+      height: 100%;
+      background: #007bff;
+      transition: width 0.3s ease;
+    }
     table {
       width: 100%;
       margin-top: 20px;
@@ -75,7 +90,7 @@
       overflow-y: auto;
       box-shadow: 0 0 20px rgba(0,0,0,0.3);
       font-size: 0.9rem;
-      text-align: left;
+      text-align: center;
     }
     .error {
       color: red;
@@ -96,6 +111,11 @@
     }
     a.product-link:hover {
       text-decoration: underline;
+    }
+    img.product-img {
+      max-width: 60px;
+      max-height: 60px;
+      object-fit: contain;
     }
     @media (max-width: 768px) {
       table {
@@ -118,56 +138,61 @@
 <body>
   <h1 id="pageTitle">Terpene Data</h1>
   <div id="status">Loading...</div>
+  <div id="progressBarContainer"><div id="progressBar"></div></div>
   <div id="tableContainer"></div>
-  <div id="overlay" class="overlay" onclick="this.style.display='none'">
+  <div id="overlay" class="overlay" onclick="if(event.target.id==='overlay'){ this.style.display='none'; }">
     <div id="overlayContent" class="overlay-content"></div>
   </div>
   <script>
+    const progressBar = document.getElementById("progressBar");
+    function updateProgress(percent) {
+      progressBar.style.width = percent + "%";
+    }
+    updateProgress(5);
+
     const params = new URLSearchParams(window.location.search);
     const retailer = params.get("retailer") || "tampa";
     const displayName = retailer.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     document.getElementById("pageTitle").textContent = `Terpenes — ${displayName}`;
 
-    const apiUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes`;
+    const vapeUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes`;
+    const concUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=concentrates`;
 
-    fetch(apiUrl)
-      .then(res => res.text())
-      .then(data => {
-        const fixedJson = fixMalformedJson(data);
-        const parsed = JSON.parse(fixedJson);
-        const products = parsed.flatMap(p => p.results ?? []);
-        renderTerpeneTable(products);
-      })
-      .catch(err => {
-        document.getElementById("status").innerHTML = `<p class="error">Failed to load data for <strong>${displayName}</strong>.</p>`;
-        console.error(err);
-      });
+    Promise.all([
+      fetch(vapeUrl).then(r => r.text()),
+      fetch(concUrl).then(r => r.text())
+    ]).then(([vapeData, concData]) => {
+      updateProgress(40);
+      const parsedVape = fixMalformedJson(vapeData);
+      const parsedConc = fixMalformedJson(concData);
+      const allData = [...parsedVape, ...parsedConc].flatMap(p => p.results ?? []);
+      updateProgress(80);
+      renderTerpeneTable(allData);
+      updateProgress(100);
+    }).catch(err => {
+      document.getElementById("status").innerHTML = `<p class="error">Failed to load data for <strong>${displayName}</strong>.</p>`;
+      console.error(err);
+    });
 
     function fixMalformedJson(raw) {
       const trimmed = raw.trim();
       const needsStart = !trimmed.startsWith("[");
       const needsEnd = !trimmed.endsWith("]");
-      return `${needsStart ? "[" : ""}${trimmed}${needsEnd ? "]" : ""}`;
+      return JSON.parse(`${needsStart ? "[" : ""}${trimmed}${needsEnd ? "]" : ""}`);
     }
 
     function renderTerpeneTable(products) {
-      if (!products.length) {
-        document.getElementById("status").textContent = "No products found.";
-        return;
-      }
-
       const allTerpenes = [...new Set(products.flatMap(p => (p.terpenes ?? []).map(t => t.name).filter(Boolean)))].sort();
-
-      const columns = ["ProductName", "Delivery", ...allTerpenes];
+      const columns = ["Image", "ProductName", "Delivery", ...allTerpenes];
       const rows = products.map(p => {
-        const map = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
+        const terpMap = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
         return {
-          ProductName: { text: p.name, url: p.permalink ?? p.link ?? null },
+          Image: p.images?.[0]?.url || "",
+          ProductName: { text: p.name, url: p.permalink || p.link || "" },
           Delivery: p.subcategory || "",
-          ...Object.fromEntries(allTerpenes.map(t => [t, map[t] ?? ""]))
+          ...Object.fromEntries(allTerpenes.map(t => [t, terpMap[t] ?? ""]))
         };
       });
-
       createSortableTable(columns, rows);
       document.getElementById("status").textContent = `Loaded ${rows.length} products.`;
     }
@@ -178,8 +203,7 @@
       const headRow = thead.insertRow();
       columns.forEach(col => {
         const th = document.createElement("th");
-        const isTerpene = terpeneDescriptions[col];
-        th.innerHTML = isTerpene ? `${col}<span class="info-icon" onclick="showDescription(event, '${col}')">i</span>` : col;
+        th.textContent = col;
         th.addEventListener("click", () => sortBy(col, data));
         headRow.appendChild(th);
       });
@@ -191,6 +215,8 @@
           const td = tr.insertCell();
           if (col === "ProductName" && row[col]?.url) {
             td.innerHTML = `<a class="product-link" href="${row[col].url}" target="_blank">${row[col].text}</a>`;
+          } else if (col === "Image" && row[col]) {
+            td.innerHTML = `<img class="product-img" src="${row[col]}" alt="Image" />`;
           } else {
             td.textContent = row[col]?.text || row[col] || "";
           }
@@ -221,13 +247,6 @@
     function clearHighlights(table) {
       const cells = table.querySelectorAll(".highlight-col, .highlight-row, .highlight-cell");
       cells.forEach(cell => cell.classList.remove("highlight-col", "highlight-row", "highlight-cell"));
-    }
-
-    function showDescription(event, col) {
-      event.stopPropagation();
-      const content = document.getElementById("overlayContent");
-      content.innerHTML = terpeneDescriptions[col] || "No description.";
-      document.getElementById("overlay").style.display = "flex";
     }
 
     function sortBy(col, data) {
