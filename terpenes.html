@@ -133,26 +133,123 @@
     <div id="overlayContent" class="overlay-content"></div>
   </div>
   <script>
+    const params = new URLSearchParams(window.location.search);
+    const retailer = params.get("retailer") || "tampa";
+    const displayName = retailer.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    document.getElementById("pageTitle").textContent = `Terpenes — ${displayName}`;
+
+    const apiUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes`;
+
+    fetch(apiUrl)
+      .then(res => res.text())
+      .then(data => {
+        const fixedJson = fixMalformedJson(data);
+        const parsed = JSON.parse(fixedJson);
+        const products = parsed.flatMap(p => p.results ?? []);
+        renderTerpeneTable(products);
+      })
+      .catch(err => {
+        document.getElementById("status").innerHTML = `<p class="error">Failed to load data for <strong>${displayName}</strong>.</p>`;
+        console.error(err);
+      });
+
+    function fixMalformedJson(raw) {
+      const trimmed = raw.trim();
+      const needsStart = !trimmed.startsWith("[");
+      const needsEnd = !trimmed.endsWith("]");
+      return `${needsStart ? "[" : ""}${trimmed}${needsEnd ? "]" : ""}`;
+    }
+
+    function renderTerpeneTable(products) {
+      if (!products.length) {
+        document.getElementById("status").textContent = "No products found.";
+        return;
+      }
+
+      const allTerpenes = [...new Set(products.flatMap(p => (p.terpenes ?? []).map(t => t.name).filter(Boolean)))].sort();
+
+      const columns = ["ProductName", "Delivery", ...allTerpenes];
+      const rows = products.map(p => {
+        const map = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
+        return {
+          ProductName: { text: p.name, url: p.permalink ?? p.link ?? null },
+          Delivery: p.subcategory || "",
+          ...Object.fromEntries(allTerpenes.map(t => [t, map[t] ?? ""]))
+        };
+      });
+
+      createSortableTable(columns, rows);
+      document.getElementById("status").textContent = `Loaded ${rows.length} products.`;
+    }
+
+    function createSortableTable(columns, data) {
+      const table = document.createElement("table");
+      const thead = table.createTHead();
+      const headRow = thead.insertRow();
+      columns.forEach(col => {
+        const th = document.createElement("th");
+        const isTerpene = terpeneDescriptions[col];
+        th.innerHTML = isTerpene ? `${col}<span class="info-icon" onclick="showDescription(event, '${col}')">i</span>` : col;
+        th.addEventListener("click", () => sortBy(col, data));
+        headRow.appendChild(th);
+      });
+
+      const tbody = table.createTBody();
+      data.forEach((row, rowIndex) => {
+        const tr = tbody.insertRow();
+        columns.forEach((col, colIndex) => {
+          const td = tr.insertCell();
+          if (col === "ProductName" && row[col]?.url) {
+            td.innerHTML = `<a class="product-link" href="${row[col].url}" target="_blank">${row[col].text}</a>`;
+          } else {
+            td.textContent = row[col]?.text || row[col] || "";
+          }
+          td.addEventListener("mouseenter", () => highlight(table, rowIndex + 1, colIndex));
+          td.addEventListener("mouseleave", () => clearHighlights(table));
+        });
+      });
+
+      const container = document.getElementById("tableContainer");
+      container.innerHTML = "";
+      container.appendChild(table);
+    }
+
     function highlight(table, rowIndex, colIndex) {
       clearHighlights(table);
       const rows = table.rows;
-
-      // Only apply column highlight if it's not the first column (Image or ProductName)
-      if (colIndex !== 0 && colIndex !== 1) {
-        for (let i = 1; i < rows.length; i++) {
-          if (rows[i].cells[colIndex]) rows[i].cells[colIndex].classList.add("highlight-col");
-        }
+      for (let i = 1; i < rows.length; i++) {
+        if (rows[i].cells[colIndex]) rows[i].cells[colIndex].classList.add("highlight-col");
       }
-
       if (rows[rowIndex]) {
         [...rows[rowIndex].cells].forEach((cell, i) => {
-          // Always apply row highlight including the first cell
           cell.classList.add("highlight-row");
           if (i === colIndex) cell.classList.add("highlight-cell");
         });
       }
     }
-  
+
+    function clearHighlights(table) {
+      const cells = table.querySelectorAll(".highlight-col, .highlight-row, .highlight-cell");
+      cells.forEach(cell => cell.classList.remove("highlight-col", "highlight-row", "highlight-cell"));
+    }
+
+    function showDescription(event, col) {
+      event.stopPropagation();
+      const content = document.getElementById("overlayContent");
+      content.innerHTML = terpeneDescriptions[col] || "No description.";
+      document.getElementById("overlay").style.display = "flex";
+    }
+
+    function sortBy(col, data) {
+      const isNumeric = data.every(row => !isNaN(parseFloat(row[col])) || row[col] === "");
+      const sorted = [...data].sort((a, b) => {
+        const av = isNumeric ? parseFloat(a[col]) || 0 : (a[col]?.text || a[col] || "").toLowerCase();
+        const bv = isNumeric ? parseFloat(b[col]) || 0 : (b[col]?.text || b[col] || "").toLowerCase();
+        return isNumeric ? bv - av : av.localeCompare(bv);
+      });
+      createSortableTable(Object.keys(sorted[0]), sorted);
+    }
+
     const terpeneDescriptions = {
       "Alpha Pinene": `🌲 <strong>Alpha Pinene</strong><br><br>• Smells like: Pine trees<br>• Feels like: Focused, alert, awake<br>• Helps with: Memory, asthma (opens airways)<br>• Real life: Found in pine needles, rosemary`,
       "Beta Caryophyllene": `🧁 <strong>Beta Caryophyllene</strong><br><br>• Smells like: Peppery, spicy<br>• Feels like: Calm, pain relief<br>• Helps with: Anxiety, inflammation<br>• Cool fact: Binds to cannabinoid receptors`,
