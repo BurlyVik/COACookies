@@ -21,6 +21,21 @@
       color: #666;
       font-size: 0.9rem;
     }
+    #progressBarContainer {
+      width: 100%;
+      background: #ddd;
+      border-radius: 5px;
+      height: 10px;
+      margin: 10px auto;
+      max-width: 400px;
+      overflow: hidden;
+    }
+    #progressBar {
+      width: 0%;
+      height: 100%;
+      background: #007bff;
+      transition: width 0.3s ease;
+    }
     table {
       width: 100%;
       margin-top: 20px;
@@ -123,11 +138,18 @@
 <body>
   <h1 id="pageTitle">Terpene Data</h1>
   <div id="status">Loading...</div>
+  <div id="progressBarContainer"><div id="progressBar"></div></div>
   <div id="tableContainer"></div>
   <div id="overlay" class="overlay" onclick="this.style.display='none'">
     <div id="overlayContent" class="overlay-content"></div>
   </div>
   <script>
+    const progressBar = document.getElementById("progressBar");
+    function updateProgress(percent) {
+      progressBar.style.width = percent + "%";
+    }
+    updateProgress(5);
+
     const params = new URLSearchParams(window.location.search);
     const retailer = params.get("retailer") || "tampa";
     const displayName = retailer.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -135,13 +157,20 @@
 
     const apiUrl = `https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes`;
 
+    updateProgress(20);
     fetch(apiUrl)
-      .then(res => res.text())
+      .then(res => {
+        updateProgress(40);
+        return res.text();
+      })
       .then(data => {
+        updateProgress(60);
         const fixedJson = fixMalformedJson(data);
         const parsed = JSON.parse(fixedJson);
         const products = parsed.flatMap(p => p.results ?? []);
+        updateProgress(85);
         renderTerpeneTable(products);
+        updateProgress(100);
       })
       .catch(err => {
         document.getElementById("status").innerHTML = `<p class="error">Failed to load data for <strong>${displayName}</strong>.</p>`;
@@ -156,20 +185,17 @@
     }
 
     function renderTerpeneTable(products) {
-      if (!products.length) {
-        document.getElementById("status").textContent = "No products found.";
-        return;
-      }
-
+      // Define columns
       const allTerpenes = [...new Set(products.flatMap(p => (p.terpenes ?? []).map(t => t.name).filter(Boolean)))].sort();
       const columns = ["Image", "ProductName", "Delivery", ...allTerpenes];
+
       const rows = products.map(p => {
-        const map = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
+        const terpMap = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, t.value?.toFixed(2)]));
         return {
-          Image: p.images?.[0]?.url || p.images?.[0]?.src || null,
-          ProductName: { text: p.name, url: p.permalink ?? p.link ?? null },
+          Image: p.images?.[0]?.url || "",
+          ProductName: { text: p.name, url: p.permalink || p.link || "" },
           Delivery: p.subcategory || "",
-          ...Object.fromEntries(allTerpenes.map(t => [t, map[t] ?? ""]))
+          ...Object.fromEntries(allTerpenes.map(t => [t, terpMap[t] ?? ""]))
         };
       });
 
@@ -183,8 +209,7 @@
       const headRow = thead.insertRow();
       columns.forEach(col => {
         const th = document.createElement("th");
-        const isTerpene = terpeneDescriptions[col];
-        th.innerHTML = isTerpene ? `${col}<span class="info-icon" onclick="showDescription(event, '${col}')">i</span>` : col;
+        th.textContent = col;
         th.addEventListener("click", () => sortBy(col, data));
         headRow.appendChild(th);
       });
@@ -197,7 +222,7 @@
           if (col === "ProductName" && row[col]?.url) {
             td.innerHTML = `<a class="product-link" href="${row[col].url}" target="_blank">${row[col].text}</a>`;
           } else if (col === "Image" && row[col]) {
-            td.innerHTML = `<img src="${row[col]}" alt="Image" class="product-img" loading="lazy">`;
+            td.innerHTML = `<img class="product-img" src="${row[col]}" alt="Image" />`;
           } else {
             td.textContent = row[col]?.text || row[col] || "";
           }
@@ -230,13 +255,6 @@
       cells.forEach(cell => cell.classList.remove("highlight-col", "highlight-row", "highlight-cell"));
     }
 
-    function showDescription(event, col) {
-      event.stopPropagation();
-      const content = document.getElementById("overlayContent");
-      content.innerHTML = terpeneDescriptions[col] || "No description.";
-      document.getElementById("overlay").style.display = "flex";
-    }
-
     function sortBy(col, data) {
       const isNumeric = data.every(row => !isNaN(parseFloat(row[col])) || row[col] === "");
       const sorted = [...data].sort((a, b) => {
@@ -246,3 +264,23 @@
       });
       createSortableTable(Object.keys(sorted[0]), sorted);
     }
+
+    const terpeneDescriptions = {
+      "Alpha Pinene": `🌲 <strong>Alpha Pinene</strong><br><br>• Smells like: Pine trees<br>• Feels like: Focused, alert, awake<br>• Helps with: Memory, asthma (opens airways)<br>• Real life: Found in pine needles, rosemary`,
+      "Beta Caryophyllene": `🧁 <strong>Beta Caryophyllene</strong><br><br>• Smells like: Peppery, spicy<br>• Feels like: Calm, pain relief<br>• Helps with: Anxiety, inflammation<br>• Cool fact: Binds to cannabinoid receptors`,
+      "Beta Myrcene": `🛋 <strong>Beta Myrcene</strong><br><br>• Smells like: Earthy, musky, mango<br>• Feels like: Super relaxed, sleepy<br>• Helps with: Pain, insomnia<br>• High dose = couch-lock`,
+      "Beta Pinene": `🌿 <strong>Beta Pinene</strong><br><br>• Smells like: Pine, herbs<br>• Feels like: Energized, clear-headed<br>• Helps with: Memory, mood, allergies`,
+      "Camphene": `🔥 <strong>Camphene</strong><br><br>• Smells like: Camphor (like Vicks VapoRub)<br>• Feels like: Clean, breathing easier<br>• Helps with: Inflammation, heart health (early studies)`,
+      "Caryophyllene Oxide": `🌶 <strong>Caryophyllene Oxide</strong><br><br>• Smells like: Spicy, woody<br>• Feels like: Calm, anti-inflammatory<br>• Helps with: Stress, fungi<br>• Bonus: What drug-sniffing dogs smell in weed`,
+      "Geraniol": `🌸 <strong>Geraniol</strong><br><br>• Smells like: Roses, sweet flowers<br>• Feels like: Uplifted, calm<br>• Helps with: Antioxidant support, possible anti-cancer benefits`,
+      "Humulene": `🍺 <strong>Humulene</strong><br><br>• Smells like: Hops, beer, wood<br>• Feels like: Not hungry, relaxed<br>• Helps with: Appetite control, pain relief`,
+      "Limonene": `🍋 <strong>Limonene</strong><br><br>• Smells like: Lemon, citrus<br>• Feels like: Happy, energized<br>• Helps with: Mood, anxiety, digestion`,
+      "Linalool": `🛀 <strong>Linalool</strong><br><br>• Smells like: Lavender<br>• Feels like: Sleepy, calm<br>• Helps with: Anxiety, pain, sleep`,
+      "Ocimene": `🌬 <strong>Ocimene</strong><br><br>• Smells like: Sweet, herbal, minty<br>• Feels like: Uplifted, alert<br>• Helps with: Antiviral, antifungal`,
+      "Para Cymene": `🧂 <strong>Para Cymene</strong><br><br>• Smells like: Mild spice, citrus<br>• Feels like: Subtle relaxation<br>• Helps with: Inflammation, infection-fighting`,
+      "Terpinolene": `🪵 <strong>Terpinolene</strong><br><br>• Smells like: Mixed — pine, floral, citrus<br>• Feels like: Uplifted, creative<br>• Helps with: Antioxidant, calm but not sleepy`,
+      "Trans-Nerolidol": `🧴 <strong>Trans-Nerolidol</strong><br><br>• Smells like: Floral, apple, tea-tree oil<br>• Feels like: Sedating, chill<br>• Helps with: Skin healing, antibacterial`
+    };
+  </script>
+</body>
+</html>
