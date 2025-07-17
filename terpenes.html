@@ -259,6 +259,13 @@
       cells.forEach(cell => cell.classList.remove("highlight-col", "highlight-row", "highlight-cell"));
     }
 
+    function showDescription(event, col) {
+      event.stopPropagation();
+      const content = document.getElementById("overlayContent");
+      content.innerHTML = terpeneDescriptions[col] || "No description.";
+      document.getElementById("overlay").style.display = "flex";
+    }
+
     function sortBy(col, data) {
       const isNumeric = data.every(row => !isNaN(parseFloat(row[col])) || row[col] === "");
       const sorted = [...data].sort((a, b) => {
