@@ -61,10 +61,6 @@ And many more.
 - Export to CSV
 - Save preferences in `localStorage`
 
-## ⚠Disclaimer
-
-This app scrapes data from a live API endpoint not intended for public use. It's for educational or internal display purposes only.
-
 ---
 
 Made with 💙 by [BurlyVik]
