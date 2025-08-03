@@ -63,4 +63,4 @@ And many more.
 
 ---
 
-Made with 💙 by [BurlyVik]
+Made with 💙 by [BurlyVik](https://www.instagram.com/burlyvik/)
