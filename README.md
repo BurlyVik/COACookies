@@ -12,7 +12,7 @@ This project is a **client-side HTML/JavaScript web app** that displays **live t
   - Delivery method (subcategory)
   - Individual terpene values (sortable)
 - **Terpene info tooltips**  
-  - Hover over the ℹ️ icon in each terpene column to get aroma, effect, and health details
+  - Click the (information) icon in each terpene column to get aroma, effect, and health details
 - **Row/column highlight on hover**
 - **Responsive design** for mobile and desktop
 - **Loading bar** shows progress of data fetch
@@ -46,7 +46,7 @@ This project is a **client-side HTML/JavaScript web app** that displays **live t
 
 ## Terpene Overlay Examples
 
-Clicking the yellow ℹ️ icon in the column header will show detailed descriptions. These include:
+Clicking the yellow (information) icon in the column header will show detailed descriptions. These include:
 
 - **Alpha Pinene**: memory, asthma, pine aroma
 - **Beta Caryophyllene**: anxiety, pain relief, spicy notes
