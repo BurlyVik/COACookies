@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jungle Boys Locations - Tiles with Maps</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #f3f3f3;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .logo {
+      margin-bottom: 10px;
+    }
+
+    .logo img {
+      height: 60px;
+    }
+
+    .disclaimer {
+      color: #b30000;
+      background: #fff3f3;
+      border: 1px solid #ffcccc;
+      padding: 10px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+      max-width: 700px;
+      font-size: 0.95rem;
+    }
+
+    .tiles-container {
+  width: 650px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+.tile {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #333;
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+  transition: background-color 0.2s ease;
+  padding: 10px;
+  aspect-ratio: 1 / 1; /* Makes tiles perfect squares */
+}
+
+.tile:hover {
+  background-color: #cce5ff;
+}
+
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.25);
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 20px;
+      position: relative;
+    }
+
+    .modal h2 {
+      margin-top: 0;
+    }
+
+    .modal p {
+      margin: 8px 0;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      font-size: 1.3rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: #999;
+    }
+
+    .close-btn:hover {
+      color: #000;
+    }
+
+    .select-btn {
+      margin-top: 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .select-btn:hover {
+      background-color: #0056b3;
+    }
+
+    .map-container {
+      margin-top: 10px;
+      height: 300px;
+      width: 100%;
+    }
+
+    .map-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo">
+  <h2 style="text-align: center;">Independent Terpene Viewer for Jungle Boys Florida</h2>
+</div>
+
+<div class="disclaimer">
+  This site is <strong>not affiliated</strong> with the official 
+  <a href="https://jungleboysflorida.com" target="_blank">Jungle Boys Florida</a>.  
+  It is an <strong>independent filtering tool</strong> to help users explore locations and product variety in a user‑friendly way.
+  <br><br>
+  <strong>Note:</strong> Jungle Boys offers <strong>All‑In‑One (AIO) vapes</strong> only — no cartridges are available.
+</div>
+
+
+  <div class="tiles-container" id="tilesContainer"></div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <button class="close-btn" id="closeBtn">&times;</button>
+      <h2 id="modalTitle">City Name</h2>
+      <p><strong>Type:</strong> <span id="modalType">-</span></p>
+      <p><strong>Address:</strong> <span id="modalAddress">-</span></p>
+      <div class="map-container" id="mapContainer"></div>
+      <button class="select-btn" id="selectBtn">Select</button>
+    </div>
+  </div>
+
+<footer>
+  <p>Visitors: 
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=YourUserName.JungleBoysCOA" alt="visitor badge">
+</p>
+</footer>
+
+<script>
+  const locations = [
+    { city: "Bonita Springs", type: "Pickup", address: "28751 S Tamiami Trail, Bonita Springs, FL 34134", retailer: "jungle-boys-bonita-springs" },
+    { city: "Daytona Beach", type: "Pickup", address: "1392 W International Speedway Blvd, Daytona Beach, FL 32114", retailer: "jungle-boys-daytona-beach" },
+    { city: "Deerfield Beach", type: "Drive Thru & Pickup", address: "1299 S Military Trail, Deerfield Beach, FL 33442", retailer: "jungle-boys-deerfield-beach" },
+    { city: "Gainesville", type: "Pickup", address: "1120 W University Ave, Gainesville, FL 32601", retailer: "jungle-boys-gainesville" },
+    { city: "Jacksonville", type: "Pickup", address: "3655 University Blvd W, Jacksonville, FL 32217", retailer: "jungle-boys-jacksonville" },
+    { city: "Miami", type: "Drive Thru & Pickup", address: "8994 SW 40th St, Miami, FL 33165", retailer: "jungle-boys-miami" },
+    { city: "Miami Beach", type: "Pickup", address: "6958 Collins Ave, Miami Beach, FL 33141", retailer: "jungle-boys-miami-beach" },
+    { city: "North Miami Beach", type: "Pickup", address: "3495 NE 163rd St, North Miami Beach, FL 33160", retailer: "jungle-boys-north-miami-beach" },
+    { city: "Ocala", type: "Pickup", address: "2301 N Pine Ave, Ocala, FL 34475", retailer: "jungle-boys-ocala" },
+    { city: "Orlando", type: "Pickup", address: "11401 University Blvd, Orlando, FL 32817", retailer: "jungle-boys-orlando" },
+    { city: "Palm Harbor", type: "Pickup", address: "31650 US Hwy 19 N, Palm Harbor, FL 34684", retailer: "jungle-boys-palm-harbor" },
+    { city: "St Pete", type: "Pickup", address: "4500 4th St N, St. Petersburg, FL 33703", retailer: "jungle-boys-st-pete" },
+    { city: "Tallahassee", type: "Pickup", address: "1719 W Tennessee St, Tallahassee, FL 32304", retailer: "jungle-boys-tallahassee" },
+    { city: "Tampa", type: "Pickup", address: "602 N Dale Mabry Hwy, Tampa, FL 33609", retailer: "jungle-boys-tampa" },
+    { city: "West Palm Beach", type: "Pickup", address: "4561 Okeechobee Blvd, West Palm Beach, FL 33417", retailer: "jungle-boys-west-palm-beach" }
+  ];
+
+  const tilesContainer = document.getElementById('tilesContainer');
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalType = document.getElementById('modalType');
+  const modalAddress = document.getElementById('modalAddress');
+  const mapContainer = document.getElementById('mapContainer');
+  const closeBtn = document.getElementById('closeBtn');
+  const selectBtn = document.getElementById('selectBtn');
+
+  let selectedLocation = null;
+
+  function openModal(index) {
+    selectedLocation = locations[index];
+    modalTitle.textContent = selectedLocation.city;
+    modalType.textContent = selectedLocation.type;
+    modalAddress.textContent = selectedLocation.address;
+
+    const encoded = encodeURIComponent(selectedLocation.address);
+    const mapURL = `https://www.google.com/maps?q=${encoded}&output=embed`;
+    mapContainer.innerHTML = `<iframe src="${mapURL}" allowfullscreen loading="lazy"></iframe>`;
+
+    modalBackdrop.classList.add('active');
+  }
+
+  function closeModal() {
+    modalBackdrop.classList.remove('active');
+    selectedLocation = null;
+    mapContainer.innerHTML = '';
+  }
+
+  locations.forEach((loc, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'tile';
+    tile.textContent = loc.city;
+    tile.addEventListener('click', () => openModal(i));
+    tilesContainer.appendChild(tile);
+  });
+
+  closeBtn.addEventListener('click', closeModal);
+  modalBackdrop.addEventListener('click', e => {
+    if (e.target === modalBackdrop) closeModal();
+  });
+
+  selectBtn.addEventListener('click', () => {
+    if (selectedLocation) {
+      localStorage.setItem("selectedLocation", JSON.stringify(selectedLocation));
+      window.location.href = `jungleTerps.html?retailer=${encodeURIComponent(selectedLocation.retailer)}`;
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+</script>
+</body>
+</html>
+

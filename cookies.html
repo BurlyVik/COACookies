@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cookies Locations - Tiles with Maps</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #f3f3f3;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .logo {
+      margin-bottom: 10px;
+    }
+
+    .logo img {
+      height: 60px;
+    }
+
+    .disclaimer {
+      color: #b30000;
+      background: #fff3f3;
+      border: 1px solid #ffcccc;
+      padding: 10px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+      max-width: 700px;
+      font-size: 0.95rem;
+    }
+
+    .tiles-container {
+      width: 800px;
+      height: 800px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .tile {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #333;
+      cursor: pointer;
+      user-select: none;
+      text-align: center;
+      transition: background-color 0.2s ease;
+      padding: 10px;
+    }
+
+    .tile:hover {
+      background-color: #cce5ff;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.25);
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 20px;
+      position: relative;
+    }
+
+    .modal h2 {
+      margin-top: 0;
+    }
+
+    .modal p {
+      margin: 8px 0;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      font-size: 1.3rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: #999;
+    }
+
+    .close-btn:hover {
+      color: #000;
+    }
+
+    .select-btn {
+      margin-top: 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .select-btn:hover {
+      background-color: #0056b3;
+    }
+
+    .map-container {
+      margin-top: 10px;
+      height: 300px;
+      width: 100%;
+    }
+
+    .map-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+<!-- Donations Section -->
+
+
+  <div class="logo">
+    <h2 style="text-align: center;">Independent Terpene Viewer for CookiesFlorida.co</h2>
+  </div>
+
+  <div class="disclaimer">
+    ⚠️ This site is <strong>not affiliated</strong> with the official <a href="https://cookies.co" target="_blank">Cookies.co</a>.  
+    It is an <strong>independent filtering tool</strong> to help users explore locations and product variety in a user-friendly way.
+  </div>
+
+  <div class="tiles-container" id="tilesContainer"></div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <button class="close-btn" id="closeBtn">&times;</button>
+      <h2 id="modalTitle">City Name</h2>
+      <p><strong>Type:</strong> <span id="modalType">-</span></p>
+      <p><strong>Address:</strong> <span id="modalAddress">-</span></p>
+      <div class="map-container" id="mapContainer"></div>
+      <button class="select-btn" id="selectBtn">Select</button>
+    </div>
+  </div>
+<footer>
+  <p>Visitors: 
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=BurlyVik.COACookies" alt="visitor badge">
+</p>  
+</footer>
+  <script>
+    const locations = [
+      { city: "Bradenton", type: "Pickup", address: "4427 53rd Ave E, Bradenton, FL 34203" },
+      { city: "Brooksville", type: "Pickup", address: "12115 Cortez Blvd, Brooksville, FL 34613" },
+      { city: "Deland Woodland", type: "Pickup", address: "2235 S Woodland Blvd, DeLand, FL 32720" },
+      { city: "Fort Myers", type: "Pickup", address: "9962 Interstate Commerce Dr, Fort Myers, FL 33913" },
+      { city: "Gainesville", type: "Pickup", address: "626 NW 13th St, Gainesville, FL 32601" },
+      { city: "Jacksonville", type: "Pickup", address: "8215 Dix Ellis Trail, Jacksonville, FL 32256" },
+      { city: "Miami", type: "Pickup", address: "8303 Bird Rd, Miami, FL 33155" },
+      { city: "N. Miami Beach", type: "Pickup", address: "17150 Biscayne Blvd, Aventura, FL 33160" },
+      { city: "Orange Blossom", type: "Pickup", address: "9350 S Orange Blossom Trl, Orlando, FL 32837" },
+      { city: "Orange Park", type: "Pickup", address: "859 Blanding Blvd, Orange Park, FL 32065" },
+      { city: "Orlando", type: "Delivery & Pickup", address: "1345 Lee Rd, Orlando, FL 32810" },
+      { city: "Palm Bay", type: "Pickup", address: "1300 Palm Bay Rd NE, Palm Bay, FL 32905" },
+      { city: "Pensacola", type: "Pickup", address: "176 E 9 Mile Rd, Pensacola, FL 32534" },
+      { city: "Port St. Lucie", type: "Pickup", address: "1401 SE Village Green Dr, Port St. Lucie, FL 34952" },
+      { city: "Tampa", type: "Pickup", address: "2961 N Dale Mabry Hwy, Tampa, FL 33607" },
+      { city: "Tampa Fletcher", type: "Pickup", address: "1509 E Fletcher Ave, Tampa, FL 33612" }
+    ];
+
+    const tilesContainer = document.getElementById('tilesContainer');
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalType = document.getElementById('modalType');
+    const modalAddress = document.getElementById('modalAddress');
+    const mapContainer = document.getElementById('mapContainer');
+    const closeBtn = document.getElementById('closeBtn');
+    const selectBtn = document.getElementById('selectBtn');
+
+    let selectedLocation = null;
+
+    function slugify(city) {
+      return city.toLowerCase().replace(/\./g, '').replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
+    }
+
+    function openModal(index) {
+      selectedLocation = locations[index];
+      modalTitle.textContent = selectedLocation.city;
+      modalType.textContent = selectedLocation.type;
+      modalAddress.textContent = selectedLocation.address;
+
+      const encoded = encodeURIComponent(selectedLocation.address);
+      const mapURL = `https://www.google.com/maps?q=${encoded}&output=embed`;
+
+      mapContainer.innerHTML = `<iframe src="${mapURL}" allowfullscreen loading="lazy"></iframe>`;
+      modalBackdrop.classList.add('active');
+    }
+
+    function closeModal() {
+      modalBackdrop.classList.remove('active');
+      selectedLocation = null;
+      mapContainer.innerHTML = '';
+    }
+
+    locations.forEach((loc, i) => {
+      const tile = document.createElement('div');
+      tile.className = 'tile';
+      tile.textContent = loc.city;
+      tile.addEventListener('click', () => openModal(i));
+      tilesContainer.appendChild(tile);
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', e => {
+      if (e.target === modalBackdrop) closeModal();
+    });
+
+    selectBtn.addEventListener('click', () => {
+      if (selectedLocation) {
+        const slug = slugify(selectedLocation.city);
+        window.location.href = `cookyTerps.html?retailer=${slug}`;
+      }
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+</body>
+</html>
