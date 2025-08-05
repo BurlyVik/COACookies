@@ -30,7 +30,7 @@
     .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 999; padding: 10px; }
     .overlay-content { background: white; padding: 20px; border-radius: 10px; max-width: 90%; max-height: 80%; overflow-y: auto; box-shadow: 0 0 20px rgba(0,0,0,0.3); font-size: 0.9rem; text-align: left; }
     .error { color: red; text-align: center; }
-     /* Mobile-friendly adjustments */
+     
     @media (max-width: 768px) {
       table {
         display: block;
@@ -261,6 +261,7 @@ function showDescription(event, col) {
   document.getElementById("overlay").style.display = "flex";
 }
 
+  // retrieved emojis from emojieDB
 const terpeneDescriptions = {
       "Alpha Pinene": `🌲 <strong>Alpha Pinene</strong><br><br>• Smells like: Pine trees<br>• Feels like: Focused, alert, awake<br>• Helps with: Memory, asthma (opens airways)<br>• Real life: Found in pine needles, rosemary`,
       "Beta Caryophyllene": `🧁 <strong>Beta Caryophyllene</strong><br><br>• Smells like: Peppery, spicy<br>• Feels like: Calm, pain relief<br>• Helps with: Anxiety, inflammation<br>• Cool fact: Binds to cannabinoid receptors`,
@@ -281,4 +282,5 @@ const terpeneDescriptions = {
 </script>
 </body>
 </html>
+
 
