@@ -12,7 +12,7 @@
     #progressBarContainer { width: 100%; background: #ddd; border-radius: 5px; height: 10px; margin: 10px auto; max-width: 400px; overflow: hidden; }
     #progressBar { width: 0%; height: 100%; background: #007bff; transition: width 0.3s ease; }
 
-    /* Filter dropdown */
+
     #filterContainer { text-align: center; margin-top: 10px; }
     #subcategoryFilter { font-size: 0.9rem; padding: 3px 5px; }
 
@@ -33,12 +33,12 @@
       line-height: 1;
     }
 
-    /* Overlay for terpene descriptions */
+
     .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 999; padding: 10px; }
     .overlay-content { background: white; padding: 20px; border-radius: 10px; max-width: 90%; max-height: 80%; overflow-y: auto; box-shadow: 0 0 20px rgba(0,0,0,0.3); font-size: 0.9rem; text-align: left; }
     .error { color: red; text-align: center; }
 
-    /* Mobile-friendly adjustments */
+
     @media (max-width: 768px) {
       table {
         display: block;
@@ -90,7 +90,7 @@
 
   <div id="progressBarContainer"><div id="progressBar"></div></div>
 
-  <!-- Filter dropdown -->
+
   <div id="filterContainer">
     <label for="subcategoryFilter" style="margin-right: 6px; font-weight: bold;">Filter:</label>
     <select id="subcategoryFilter">
@@ -120,7 +120,7 @@ document.getElementById("pageTitle").textContent = `Terpenes — ${displayName}`
 
 let allFetchedProducts = [];
 
-// Fetch Vapes, Concentrates, Pre-rolls, Premium Flower
+
 Promise.all([
   fetch(`https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes`).then(r => r.text()),
   fetch(`https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=concentrates`).then(r => r.text()),
@@ -158,7 +158,7 @@ function fixMalformedJson(raw) {
   return JSON.parse(`${needsStart ? "[" : ""}${trimmed}${needsEnd ? "]" : ""}`);
 }
 
-// Dropdown filtering
+
 document.getElementById("subcategoryFilter").addEventListener("change", function () {
   const selected = this.value;
   if (selected === "all") {
@@ -181,7 +181,7 @@ const allTerpenes = [...new Set(
 
   const rows = products.map(p => {
     const terpMap = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, typeof t.value === "number" ? t.value.toFixed(2) : ""]));
-    // Extract price from variants
+    
 let priceValue = "";
 if (Array.isArray(p.variants) && p.variants.length > 0) {
   const variantPrice = p.variants[0].price ?? p.variants[0].regular_price;
@@ -210,29 +210,27 @@ function createSortableTable(columns, data) {
 
   columns.forEach(col => {
     const th = document.createElement("th");
-    th.style.position = "relative"; // Needed for positioning
+    th.style.position = "relative";
     th.style.textAlign = "center";
-    th.style.whiteSpace = "normal"; // Allow wrapping
+    th.style.whiteSpace = "normal";
 
     if (terpeneDescriptions[col]) {
-  // Flexbox keeps text on left, icon on right in same row
+
   const headerFlex = document.createElement("div");
   headerFlex.style.display = "flex";
   headerFlex.style.justifyContent = "space-between";
   headerFlex.style.alignItems = "center";
   headerFlex.style.width = "100%";
 
-  // Column name
+
   const colLabel = document.createElement("span");
   colLabel.textContent = col;
 
-  // Info icon
   const infoIcon = document.createElement("span");
   infoIcon.className = "info-icon";
   infoIcon.textContent = "ℹ️";
   infoIcon.onclick = (e) => showDescription(e, col);
 
-  // Assemble
   headerFlex.appendChild(colLabel);
   headerFlex.appendChild(infoIcon);
   th.appendChild(headerFlex);
@@ -305,6 +303,7 @@ function showDescription(event, col) {
   document.getElementById("overlay").style.display = "flex";
 }
 
+  // emojis retreived from emojiDB
 const terpeneDescriptions = {
       "Alpha Pinene": `🌲 <strong>Alpha Pinene</strong><br><br>• Smells like: Pine trees<br>• Feels like: Focused, alert, awake<br>• Helps with: Memory, asthma (opens airways)<br>• Real life: Found in pine needles, rosemary`,
       "Beta Caryophyllene": `🧁 <strong>Beta Caryophyllene</strong><br><br>• Smells like: Peppery, spicy<br>• Feels like: Calm, pain relief<br>• Helps with: Anxiety, inflammation<br>• Cool fact: Binds to cannabinoid receptors`,
